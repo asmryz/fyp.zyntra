@@ -1,0 +1,523 @@
+/*
+ * Public website theme, modelled on the reference screenshots: near-black,
+ * aqua and coral-red colour blocks with big, heavy headlines.
+ *
+ *   Ink         #0E0E0E  navbar, hero, programs, footer, inner page headers
+ *   Deep teal   #0F2B27  "What ZYNTRA offers"
+ *   Aqua        #19E8C9  headlines on ink, About, call to action, inner page bodies
+ *   Coral       #FF4B3E  buttons, marquee, "How it works", highlights
+ *   Off-white   #F4F4EF  text on ink and teal (text only, never a surface)
+ *   Black text  #0B0B0B  text on aqua and coral
+ *
+ * Everything is scoped to .theme-public (set by PublicLayout), so the login,
+ * registration, student, staff and admin pages are not affected. Dark
+ * sections redefine the text variables so shared components stay readable.
+ */
+.theme-public {
+  --ink: #0e0e0e;
+  --teal: #0f2b27;
+  --aqua: #19e8c9;
+  --coral: #ff4b3e;
+  --coral-hover: #ff6a5f;
+  --paper: #f4f4ef;
+  --black: #0b0b0b;
+
+  /* Light (aqua / coral) sections: black text */
+  --text: var(--black);
+  --text-2: #10201d;
+  --muted: #0f3d36;
+  --line: rgba(11, 11, 11, 0.22);
+  --line-strong: rgba(11, 11, 11, 0.5);
+
+  min-height: 100vh;
+  background: var(--aqua);
+  color: var(--text);
+  color-scheme: light;
+}
+
+/* Dark sections: off-white text, aqua accents */
+.theme-public .navbar,
+.theme-public .mobile-menu,
+.theme-public .hero,
+.theme-public #offers,
+.theme-public #programs,
+.theme-public .footer,
+.theme-public .page-hero,
+.theme-public .side-panel {
+  --text: var(--paper);
+  --text-2: #d9d9d2;
+  --muted: var(--aqua);
+  --line: rgba(244, 244, 239, 0.18);
+  --line-strong: rgba(244, 244, 239, 0.45);
+  color: var(--paper);
+}
+
+.theme-public :focus-visible {
+  outline-color: var(--coral);
+}
+
+.theme-public ::selection {
+  background: var(--coral);
+  color: var(--black);
+}
+
+.theme-public h1,
+.theme-public h2,
+.theme-public h3,
+.theme-public h4 {
+  color: var(--text);
+}
+
+.theme-public p {
+  color: var(--text-2);
+}
+
+/* ---------- Typography: heavy, tight headlines and spaced uppercase labels ---------- */
+
+.theme-public .section-title,
+.theme-public .hero-title,
+.theme-public .cta-title,
+.theme-public .page-hero h1 {
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.theme-public .section-title {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+}
+
+/* Small spaced uppercase labels above headings */
+.theme-public .eyebrow {
+  color: var(--muted);
+  letter-spacing: 0.2em;
+}
+
+/* ---------- Buttons and links ---------- */
+
+.theme-public .btn {
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.theme-public .btn-primary {
+  background: var(--coral);
+  color: var(--black);
+}
+
+.theme-public .btn-primary:hover:not(:disabled) {
+  background: var(--coral-hover);
+}
+
+/* Secondary buttons: black outline on light sections, aqua outline on dark ones */
+.theme-public .btn-secondary {
+  border: 2px solid var(--black);
+  background: transparent;
+  color: var(--black);
+}
+
+.theme-public .btn-secondary:hover:not(:disabled) {
+  border-color: var(--black);
+  background: var(--black);
+  color: var(--aqua);
+}
+
+.theme-public .hero .btn-secondary,
+.theme-public #programs .btn-secondary {
+  border-color: var(--aqua);
+  color: var(--aqua);
+}
+
+.theme-public .hero .btn-secondary:hover:not(:disabled),
+.theme-public #programs .btn-secondary:hover:not(:disabled) {
+  background: var(--aqua);
+  color: var(--black);
+}
+
+.theme-public .text-link {
+  color: var(--black);
+  text-decoration-color: var(--coral);
+  text-decoration-thickness: 2px;
+}
+
+.theme-public .back-link {
+  color: var(--aqua);
+}
+
+.theme-public .back-link:hover {
+  color: var(--paper);
+}
+
+/* ---------- Logo, navbar and mobile menu ---------- */
+
+.theme-public .logo,
+.theme-public .logo-word {
+  color: var(--paper);
+}
+
+/* Aqua circle with a coral block behind it, as in the reference logo */
+.theme-public .logo-mark {
+  border-radius: 50%;
+  background: var(--aqua);
+  color: var(--black);
+  box-shadow: 8px 0 0 var(--coral);
+}
+
+.theme-public .logo-text {
+  margin-left: 8px;
+}
+
+.theme-public .navbar {
+  background: var(--ink);
+  border-bottom: none;
+}
+
+.theme-public .navbar-link,
+.theme-public .mobile-menu-link {
+  color: var(--paper);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theme-public .navbar-link:hover,
+.theme-public .navbar-link.active {
+  color: var(--aqua);
+}
+
+.theme-public .navbar .btn-ghost {
+  color: var(--paper);
+}
+
+.theme-public .navbar .btn-ghost:hover:not(:disabled) {
+  background: transparent;
+  color: var(--aqua);
+}
+
+.theme-public .mobile-menu {
+  background: var(--ink);
+}
+
+/* ---------- Hero: ink with an aqua headline ---------- */
+
+.theme-public .hero {
+  background: var(--ink);
+}
+
+.theme-public .hero-title {
+  font-size: clamp(2.8rem, 6.6vw, 5.6rem);
+  color: var(--aqua);
+}
+
+.theme-public .hero-text {
+  color: var(--paper);
+}
+
+/* CSS version of the 3D word (reduced motion / no WebGL): aqua with coral depth */
+.theme-public .hero-word-fallback {
+  color: var(--aqua);
+  text-shadow:
+    1px 1px 0 #ff5a4e,
+    2px 2px 0 #ff5246,
+    3px 3px 0 var(--coral),
+    4px 4px 0 var(--coral),
+    5px 5px 0 #e63b2f,
+    6px 6px 0 #cc3227,
+    7px 7px 0 #cc3227,
+    10px 14px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Marquee: coral band ---------- */
+
+.theme-public .marquee {
+  background: var(--coral);
+  border-block: none;
+}
+
+.theme-public .marquee-item {
+  color: var(--black);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.theme-public .marquee-item::after {
+  background: var(--black);
+  border-radius: 50%;
+}
+
+/* ---------- About: aqua ---------- */
+
+.theme-public .section-deep {
+  background: var(--aqua);
+  border-top: none;
+}
+
+.theme-public .section-deep p,
+.theme-public .eyebrow-warm {
+  color: var(--black);
+}
+
+.theme-public .about-block {
+  border-top: 2px solid var(--black);
+}
+
+/* ---------- What ZYNTRA offers: deep teal ---------- */
+
+.theme-public #offers {
+  background: var(--teal);
+}
+
+.theme-public .offer-row,
+.theme-public .offer-row:last-child {
+  border-color: var(--line-strong);
+}
+
+.theme-public .offer-number {
+  -webkit-text-stroke-color: var(--aqua);
+}
+
+.theme-public .offer-row.is-active .offer-number {
+  color: var(--coral);
+  -webkit-text-stroke-color: var(--coral);
+}
+
+.theme-public .offer-link {
+  color: var(--paper);
+  text-decoration-color: var(--coral);
+}
+
+.theme-public .offer-link:hover {
+  color: var(--aqua);
+}
+
+/* ---------- How it works: coral ---------- */
+
+.theme-public .section-navy-2 {
+  background: var(--coral);
+}
+
+.theme-public .section-navy-2 p,
+.theme-public .eyebrow-on-blue,
+.theme-public .step-number {
+  color: var(--black);
+}
+
+.theme-public .step {
+  border-top: 2px solid var(--black);
+}
+
+/* ---------- Programs: ink ---------- */
+
+.theme-public #programs {
+  background: var(--ink);
+}
+
+.theme-public .program-rows {
+  border-top: 2px solid var(--line-strong);
+}
+
+.theme-public .program-row {
+  border-bottom: 2px solid var(--line-strong);
+}
+
+.theme-public .program-row-meta {
+  color: var(--text-2);
+}
+
+.theme-public .program-row .icon {
+  color: var(--coral);
+}
+
+/* Landing page preview: small rounded cards with the program name only */
+.theme-public .program-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.theme-public .program-chip {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  min-height: 64px;
+  padding: 14px 20px;
+  border: 2px solid var(--aqua);
+  border-radius: 16px;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--aqua);
+  text-decoration: none;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.theme-public .program-chip:hover {
+  background: var(--aqua);
+  color: var(--black);
+}
+
+/* Programs page: rows sit on aqua */
+.theme-public .page-body .program-rows,
+.theme-public .page-body .program-row {
+  border-color: var(--black);
+}
+
+.theme-public .page-body .program-row:hover {
+  background: var(--coral);
+}
+
+.theme-public .page-body .program-row .icon {
+  color: var(--black);
+}
+
+/* ---------- Closing call to action: aqua with a black pill ---------- */
+
+.theme-public .section-orange {
+  background: var(--aqua);
+}
+
+.theme-public .cta-title {
+  font-size: clamp(2.6rem, 6.5vw, 5.4rem);
+  color: var(--black);
+}
+
+.theme-public .btn-navy {
+  background: var(--black);
+  color: var(--paper);
+}
+
+.theme-public .btn-navy:hover:not(:disabled) {
+  background: var(--coral);
+  color: var(--black);
+}
+
+.theme-public .btn-outline-navy {
+  border: 2px solid var(--black);
+  color: var(--black);
+}
+
+.theme-public .btn-outline-navy:hover:not(:disabled) {
+  border-color: var(--black);
+  background: var(--black);
+  color: var(--aqua);
+}
+
+/* ---------- Inner public pages (programs, program detail, legal, 404) ---------- */
+
+.theme-public .page-hero {
+  background: var(--ink);
+  border-bottom: none;
+}
+
+.theme-public .page-hero h1 {
+  color: var(--aqua);
+}
+
+.theme-public .page-body {
+  background: var(--aqua);
+}
+
+.theme-public .program-facts,
+.theme-public .program-facts div {
+  border-color: var(--line-strong);
+}
+
+.theme-public .program-facts dt {
+  color: var(--muted);
+}
+
+.theme-public .side-panel {
+  border: none;
+  border-radius: 24px;
+  background: var(--ink);
+}
+
+.theme-public .side-panel h2 {
+  color: var(--aqua);
+}
+
+.theme-public .side-panel .field-hint {
+  color: var(--text-2);
+}
+
+.theme-public .legal ul {
+  color: var(--text-2);
+}
+
+.theme-public .field-hint {
+  color: var(--muted);
+}
+
+/* ---------- Loading, empty and error states ---------- */
+
+.theme-public .skeleton {
+  background: linear-gradient(90deg, #262626 0%, #333333 50%, #262626 100%);
+  background-size: 200% 100%;
+}
+
+.theme-public .page-body .skeleton,
+.theme-public .section-deep .skeleton {
+  background: linear-gradient(90deg, #13c7ac 0%, #10b39b 50%, #13c7ac 100%);
+  background-size: 200% 100%;
+}
+
+.theme-public .empty-state {
+  border: 2px dashed var(--line-strong);
+}
+
+.theme-public .alert {
+  border-color: var(--line-strong);
+  background: var(--coral);
+  color: var(--black);
+}
+
+/* ---------- Footer: ink ---------- */
+
+.theme-public .footer {
+  background: var(--ink);
+  border-top: none;
+}
+
+.theme-public .footer-heading {
+  color: var(--aqua);
+}
+
+/* .footer-links is also used for the roadmap list on program pages, so these
+   rules are limited to the footer itself */
+.theme-public .footer .footer-links a,
+.theme-public .footer-legal a,
+.theme-public .footer-contact {
+  color: var(--paper);
+}
+
+.theme-public .footer .footer-links a {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.theme-public .footer .footer-links a:hover,
+.theme-public .footer-legal a:hover {
+  color: var(--aqua);
+}
+
+.theme-public .footer-contact .icon {
+  color: var(--coral);
+}
+
+.theme-public .footer-bottom {
+  border-top-color: rgba(244, 244, 239, 0.18);
+}
+
+.theme-public .footer-disclaimer,
+.theme-public .footer-muted,
+.theme-public .footer-bottom p {
+  color: #b9b9b2;
+}

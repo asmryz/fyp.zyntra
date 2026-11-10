@@ -1,0 +1,482 @@
+/*
+ * Login, registration, verification, password recovery and invitation pages.
+ * Same palette as the public website and student dashboard: an aqua page,
+ * an ink card, coral buttons and accents.
+ *
+ *   Aqua        #19E8C9  page background, card headline, links on ink
+ *   Coral       #FF4B3E  main button, labels above titles, error accents
+ *   Ink         #0E0E0E  card, logo mark
+ *   Ink raised  #1C1C1C  inputs and boxes inside the card
+ *   Off-white   #F4F4EF  text on ink (text only)
+ *   Black       #0B0B0B  text on aqua and coral
+ *
+ * The variables are redefined inside .auth-shell only, so shared components
+ * (inputs, alerts) switch colours here without affecting the rest of the site.
+ */
+.auth-shell {
+  --aqua: #19e8c9;
+  --coral: #ff4b3e;
+  --coral-hover: #ff6a5f;
+  --ink: #0e0e0e;
+  --ink-raised: #1c1c1c;
+  --paper: #f4f4ef;
+  --black: #0b0b0b;
+
+  /* Outside the card (aqua page): black text */
+  --text: var(--black);
+  --text-2: #10201d;
+  --muted: #0f3d36;
+  --line: rgba(11, 11, 11, 0.2);
+  --line-strong: rgba(11, 11, 11, 0.45);
+  --error: var(--coral);
+  --success: var(--aqua);
+  --warning: var(--coral);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+  color: var(--text);
+  color-scheme: light;
+  background: var(--aqua);
+}
+
+.auth-shell :focus-visible {
+  outline-color: var(--black);
+}
+
+.auth-shell ::selection {
+  background: var(--coral);
+  color: var(--black);
+}
+
+/* ---------- Background lettering ---------- */
+
+.auth-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.auth-backdrop span {
+  position: absolute;
+  top: 50%;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(11rem, 34vw, 30rem);
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  filter: blur(12px);
+  transform: translateY(-50%);
+}
+
+.auth-backdrop-left {
+  left: -0.14em;
+  color: rgba(14, 14, 14, 0.16);
+}
+
+.auth-backdrop-right {
+  right: -0.14em;
+  color: rgba(255, 75, 62, 0.4);
+}
+
+/* ---------- Header ---------- */
+
+.auth-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 20px 16px;
+}
+
+@media (min-width: 768px) {
+  .auth-header {
+    padding: 26px 32px;
+  }
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  color: var(--black);
+  text-decoration: none;
+}
+
+/* Ink circle with a coral block behind it, like the public site logo */
+.auth-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--aqua);
+  box-shadow: 9px 0 0 var(--coral);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.auth-brand-word {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.auth-home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.auth-home-link:hover {
+  color: #3a0d08;
+}
+
+/* ---------- Card: ink ---------- */
+
+.auth-main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px 56px;
+}
+
+.auth-card {
+  /* Inside the card: off-white text, aqua accents */
+  --text: var(--paper);
+  --text-2: #d9d9d2;
+  --muted: #b9b9b2;
+  --line: rgba(244, 244, 239, 0.16);
+  --line-strong: rgba(244, 244, 239, 0.3);
+  --input-bg: var(--ink-raised);
+
+  width: 100%;
+  max-width: 470px;
+  padding: 32px 22px;
+  background: var(--ink);
+  border: none;
+  border-radius: 28px;
+  color: var(--paper);
+  color-scheme: dark;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.55);
+}
+
+@media (min-width: 480px) {
+  .auth-card {
+    padding: 42px 40px 38px;
+  }
+}
+
+.auth-card :focus-visible {
+  outline-color: var(--aqua);
+}
+
+.auth-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--coral);
+}
+
+/* "—— LABEL" style, as on the public site */
+.auth-eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 2px;
+  background: currentColor;
+}
+
+.auth-title {
+  margin-bottom: 12px;
+  font-size: clamp(1.9rem, 4.5vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  color: var(--aqua);
+}
+
+.auth-subtitle {
+  margin-bottom: 28px;
+  font-size: 0.97rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.auth-footer {
+  margin-top: 24px;
+  font-size: 0.93rem;
+  text-align: center;
+  color: var(--text-2);
+}
+
+.auth-footer p {
+  color: var(--text-2);
+}
+
+.auth-legal {
+  margin-top: 14px;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.auth-legal a {
+  color: var(--text-2);
+}
+
+/* ---------- Form controls inside the card ---------- */
+
+.auth-card .form-stack {
+  gap: 20px;
+}
+
+.auth-card .field-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper);
+}
+
+.auth-card .input {
+  min-height: 48px;
+  padding: 0.7rem 0.9rem;
+  border: 1.5px solid rgba(244, 244, 239, 0.25);
+  border-radius: 12px;
+  background: var(--ink-raised);
+  color: var(--paper);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.auth-card .input:hover {
+  border-color: rgba(244, 244, 239, 0.45);
+}
+
+.auth-card .input::placeholder {
+  color: #8f8f88;
+}
+
+.auth-card .input:focus {
+  border-color: var(--aqua);
+  box-shadow: 0 0 0 3px rgba(25, 232, 201, 0.25);
+}
+
+.auth-card .input[aria-invalid='true'] {
+  border-color: var(--coral);
+}
+
+.auth-card .input[aria-invalid='true']:focus {
+  box-shadow: 0 0 0 3px rgba(255, 75, 62, 0.25);
+}
+
+.auth-card .field-hint {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.auth-card .field-error {
+  font-weight: 600;
+  color: var(--coral-hover);
+}
+
+.auth-card .input-action {
+  color: var(--muted);
+}
+
+.auth-card .input-action:hover {
+  background: #2a2a2a;
+  color: var(--paper);
+}
+
+.auth-card .text-link,
+.auth-card .link-button {
+  color: var(--aqua);
+}
+
+/* Main action: coral pill with black uppercase text */
+.auth-submit {
+  min-height: 52px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: var(--coral);
+  color: var(--black);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.auth-submit:hover:not(:disabled) {
+  background: var(--coral-hover);
+}
+
+.auth-secondary {
+  min-height: 48px;
+  border: 2px solid var(--aqua);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--aqua);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.auth-secondary:hover:not(:disabled) {
+  border-color: var(--aqua);
+  background: var(--aqua);
+  color: var(--black);
+}
+
+.auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: -6px;
+  font-size: 0.9rem;
+}
+
+/* Alerts on the ink card */
+.auth-card .alert {
+  background: var(--ink-raised);
+  border-color: rgba(244, 244, 239, 0.2);
+  color: var(--paper);
+}
+
+.auth-card .alert p {
+  color: var(--paper);
+}
+
+.auth-card .alert-error {
+  border-left-color: var(--coral);
+}
+
+.auth-card .alert-success,
+.auth-card .alert-info {
+  border-left-color: var(--aqua);
+}
+
+.auth-card .alert-warning {
+  border-left-color: var(--coral);
+}
+
+.auth-card .alert strong {
+  color: inherit;
+}
+
+/* ---------- Verification code ---------- */
+
+.auth-email {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--ink-raised);
+  font-size: 0.93rem;
+}
+
+.auth-email .icon {
+  flex-shrink: 0;
+  color: var(--aqua);
+}
+
+.auth-email strong {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--paper);
+}
+
+.auth-email .link-button {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+
+.code-field .input {
+  min-height: 62px;
+  padding-left: 0.55em;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.55em;
+  text-align: center;
+}
+
+.auth-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.auth-note .icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.auth-resend {
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ---------- Staff invitation ---------- */
+
+.permission-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.permission-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--ink-raised);
+  border: 1px solid rgba(244, 244, 239, 0.16);
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.auth-invitee {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--ink-raised);
+}
+
+.auth-invitee p {
+  margin: 0;
+}

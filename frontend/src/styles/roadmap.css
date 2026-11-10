@@ -1,0 +1,410 @@
+/*
+ * Branching roadmap (see components/roadmap/RoadmapCanvas.jsx).
+ * The board is always light so it looks the same on the student dashboard
+ * and in the admin preview. Branch colours arrive as CSS variables set on
+ * each column and on the detail card:
+ *   --branch       the branch colour (lines, circles, heading)
+ *   --branch-soft  light tint (hover)
+ *   --branch-halo  ring around the selected circle
+ *   --branch-text  the colour darkened enough for text on white
+ *   --branch-on    white or dark text for use on the branch colour
+ */
+
+.rm {
+  position: relative;
+}
+
+.rm-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.rm-scroll {
+  /* position: relative also clips the visually hidden step labels (absolutely
+     positioned) so they cannot widen the page */
+  position: relative;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.rm-scroll:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.rm-board {
+  box-sizing: content-box;
+  margin-inline: auto;
+  padding: 32px 24px 40px;
+  color: #111827;
+}
+
+/* ---------- Central heading ---------- */
+
+.rm-root {
+  display: flex;
+  justify-content: center;
+}
+
+.rm-root-title {
+  max-width: 100%;
+  margin: 0;
+  padding: 14px 26px;
+  border-radius: 14px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Curved connectors ---------- */
+
+.rm-curves {
+  display: block;
+  overflow: visible;
+}
+
+.rm-curves path {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.rm-curves circle {
+  fill: #0f172a;
+}
+
+/* ---------- Branch columns ---------- */
+
+.rm-columns {
+  display: flex;
+  justify-content: flex-start;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rm-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.rm-branch {
+  width: 100%;
+  margin: 0;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: var(--branch);
+  color: var(--branch-on);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.rm-branch-empty {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.rm-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rm-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Solid line from the heading (or the previous step) down to this step */
+.rm-line {
+  width: 2px;
+  height: 26px;
+  background: var(--branch);
+}
+
+.rm-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 4px 8px 6px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.rm-node:focus-visible {
+  outline: 2px solid var(--branch-text);
+  outline-offset: 2px;
+}
+
+.rm-dot {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 3px solid var(--branch);
+  border-radius: 50%;
+  background: #ffffff;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.rm-node:hover .rm-dot {
+  background: var(--branch-soft);
+}
+
+.rm-node.is-active .rm-dot {
+  background: var(--branch);
+  box-shadow: 0 0 0 6px var(--branch-halo);
+}
+
+.rm-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #1f2937;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.rm-node.is-active .rm-label {
+  font-weight: 800;
+  color: var(--branch-text);
+}
+
+/* ---------- Empty roadmap ---------- */
+
+.rm-empty {
+  padding: 48px 24px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.rm-empty h3 {
+  margin-bottom: 6px;
+  font-size: 1.15rem;
+  color: #111827;
+}
+
+.rm-empty p {
+  max-width: 440px;
+  margin: 0 auto;
+  font-size: 0.93rem;
+  color: #64748b;
+}
+
+/* ---------- Detail card ---------- */
+
+.rm-detail {
+  position: fixed;
+  z-index: 70;
+  overflow-y: auto;
+  padding: 22px 22px 20px;
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #e2e8f0;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.06),
+    0 24px 48px -12px rgba(15, 23, 42, 0.28);
+  animation: rm-detail-in 160ms ease-out;
+}
+
+.rm-detail:focus {
+  outline: none;
+}
+
+.rm-detail:focus-visible {
+  outline: 2px solid var(--branch-text);
+}
+
+.rm-detail.is-floating {
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100vh - 96px);
+  border-radius: 16px;
+}
+
+/* Small screens: a sheet along the bottom edge */
+.rm-detail.is-sheet {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 72vh;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  border-radius: 16px 16px 0 0;
+  border-bottom: none;
+}
+
+@keyframes rm-detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rm-detail-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.rm-detail-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.rm-detail-branch {
+  margin: 0 40px 6px 0;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--branch-text);
+}
+
+.rm-detail-title {
+  margin: 0 40px 10px 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #1f2937;
+}
+
+.rm-detail-description p,
+.rm-detail-text p {
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: #64748b;
+}
+
+.rm-detail-section {
+  margin-top: 18px;
+}
+
+.rm-detail-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+.rm-detail-heading .icon {
+  color: #64748b;
+}
+
+.rm-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rm-tags li {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.rm-tags-skills li {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.rm-tags-tools li {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+
+.rm-detail-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.15rem;
+  list-style: disc;
+  font-size: 0.92rem;
+  color: #475569;
+}
+
+.rm-detail-links {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rm-detail-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .rm-root-title {
+    max-width: 300px;
+    padding: 12px 18px;
+    font-size: 0.95rem;
+  }
+}

@@ -1,0 +1,15 @@
+# Secrets
+.env
+backend/.env
+
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+
+# Local email outbox used for automated testing
+backend/dev_outbox/
+
+# Node
+node_modules/
+frontend/dist/

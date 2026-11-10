@@ -1,0 +1,285 @@
+erDiagram
+    %% table name: alembic_version
+    %% table comment: 
+    alembic_version {
+        character_varying(32) version_num PK ""
+    }
+
+    %% table name: audit_logs
+    %% table comment: 
+    audit_logs {
+        integer id PK ""
+        integer actor_id FK ""
+        character_varying(120) actor_name  ""
+        character_varying(20) category  ""
+        character_varying(60) action  ""
+        character_varying(40) entity_type  ""
+        integer entity_id  ""
+        character_varying(300) summary  ""
+        timestamp_with_time_zone created_at  ""
+    }
+
+    %% table name: auth_codes
+    %% table comment: 
+    auth_codes {
+        integer id PK ""
+        integer user_id FK ""
+        character_varying(30) purpose  ""
+        character_varying(64) code_hash  ""
+        timestamp_with_time_zone expires_at  ""
+        integer attempts  ""
+        timestamp_with_time_zone used_at  ""
+        timestamp_with_time_zone created_at  ""
+    }
+
+    %% table name: learning_resources
+    %% table comment: 
+    learning_resources {
+        integer id PK ""
+        integer subject_id FK ""
+        integer topic_id FK ""
+        character_varying(200) title  ""
+        character_varying(500) url  ""
+        character_varying(30) resource_type  ""
+        character_varying(300) description  ""
+        integer sort_order  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+    }
+
+    %% table name: programs
+    %% table comment: 
+    programs {
+        integer id PK ""
+        character_varying(150) name  ""
+        character_varying(160) slug  ""
+        character_varying(120) department  ""
+        character_varying(40) degree_level  ""
+        character_varying(60) duration  ""
+        character_varying(300) summary  ""
+        text description  ""
+        text admission_requirements  ""
+        numeric(52) min_percentage  ""
+        jsonb accepted_qualifications  ""
+        text eligibility_notes  ""
+        integer sort_order  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+        character_varying(20) status  ""
+        integer created_by_id FK ""
+        integer updated_by_id FK ""
+    }
+
+    %% table name: refresh_tokens
+    %% table comment: 
+    refresh_tokens {
+        integer id PK ""
+        integer user_id FK ""
+        character_varying(64) token_hash  ""
+        timestamp_with_time_zone expires_at  ""
+        timestamp_with_time_zone revoked_at  ""
+        timestamp_with_time_zone created_at  ""
+    }
+
+    %% table name: roadmap_branches
+    %% table comment: 
+    roadmap_branches {
+        integer id PK ""
+        integer roadmap_id FK ""
+        character_varying(150) name  ""
+        text description  ""
+        character_varying(7) color  ""
+        integer position  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+    }
+
+    %% table name: roadmap_node_sections
+    %% table comment: 
+    roadmap_node_sections {
+        integer id PK ""
+        integer node_id FK ""
+        character_varying(100) section_title  ""
+        character_varying(20) section_type  ""
+        jsonb content  ""
+        integer position  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+    }
+
+    %% table name: roadmap_nodes
+    %% table comment: 
+    roadmap_nodes {
+        integer id PK ""
+        character_varying(150) title  ""
+        text description  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+        integer branch_id FK ""
+        integer position  ""
+        boolean is_default  ""
+    }
+
+    %% table name: roadmaps
+    %% table comment: 
+    roadmaps {
+        integer id PK ""
+        character_varying(200) title  ""
+        character_varying(80) category  ""
+        character_varying(300) summary  ""
+        text description  ""
+        integer program_id FK ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+        character_varying(20) status  ""
+        integer created_by_id FK ""
+        integer updated_by_id FK ""
+    }
+
+    %% table name: scholarships
+    %% table comment: 
+    scholarships {
+        integer id PK ""
+        character_varying(200) title  ""
+        character_varying(80) scholarship_type  ""
+        character_varying(300) summary  ""
+        text description  ""
+        jsonb eligibility_criteria  ""
+        jsonb benefits  ""
+        jsonb required_documents  ""
+        jsonb application_steps  ""
+        jsonb conditions  ""
+        integer sort_order  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+        character_varying(20) status  ""
+        integer created_by_id FK ""
+        integer updated_by_id FK ""
+    }
+
+    %% table name: site_content
+    %% table comment: 
+    site_content {
+        integer id PK ""
+        character_varying(60) key  ""
+        character_varying(200) title  ""
+        text body  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+        character_varying(20) status  ""
+        integer created_by_id FK ""
+        integer updated_by_id FK ""
+    }
+
+    %% table name: staff_invitations
+    %% table comment: 
+    staff_invitations {
+        integer id PK ""
+        character_varying(120) full_name  ""
+        character_varying(255) email  ""
+        character_varying(64) token_hash  ""
+        jsonb permissions  ""
+        integer invited_by_id FK ""
+        integer accepted_user_id FK ""
+        timestamp_with_time_zone expires_at  ""
+        timestamp_with_time_zone accepted_at  ""
+        timestamp_with_time_zone revoked_at  ""
+        timestamp_with_time_zone created_at  ""
+    }
+
+    %% table name: staff_permissions
+    %% table comment: 
+    staff_permissions {
+        integer id PK ""
+        integer user_id FK ""
+        character_varying(40) module  ""
+        character_varying(20) access_level  ""
+    }
+
+    %% table name: student_profiles
+    %% table comment: 
+    student_profiles {
+        integer id PK ""
+        integer user_id FK ""
+        character_varying(30) contact_number  ""
+        character_varying(60) previous_qualification  ""
+        character_varying(120) academic_background  ""
+        character_varying(150) board_or_university  ""
+        integer passing_year  ""
+        integer obtained_marks  ""
+        integer total_marks  ""
+        numeric(52) percentage  ""
+        integer preferred_program_id FK ""
+        text additional_details  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+    }
+
+    %% table name: test_subjects
+    %% table comment: 
+    test_subjects {
+        integer id PK ""
+        character_varying(150) name  ""
+        text description  ""
+        integer sort_order  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+        character_varying(20) status  ""
+        integer created_by_id FK ""
+        integer updated_by_id FK ""
+    }
+
+    %% table name: test_topics
+    %% table comment: 
+    test_topics {
+        integer id PK ""
+        integer subject_id FK ""
+        character_varying(200) title  ""
+        text explanation  ""
+        character_varying(20) status  ""
+        integer sort_order  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+    }
+
+    %% table name: users
+    %% table comment: 
+    users {
+        integer id PK ""
+        character_varying(120) full_name  ""
+        character_varying(255) email  ""
+        character_varying(255) password_hash  ""
+        character_varying(20) role  ""
+        boolean is_active  ""
+        boolean is_email_verified  ""
+        timestamp_with_time_zone email_verified_at  ""
+        timestamp_with_time_zone last_login_at  ""
+        timestamp_with_time_zone created_at  ""
+        timestamp_with_time_zone updated_at  ""
+    }
+
+    users |o--o{ audit_logs : "has_many: audit_logs, belongs_to: actor"
+    users ||--o{ auth_codes : "has_many: auth_codes, belongs_to: user"
+    test_subjects ||--o{ learning_resources : "has_many: learning_resources, belongs_to: subject"
+    test_topics |o--o{ learning_resources : "has_many: learning_resources, belongs_to: topic"
+    users |o--o{ programs : "has_many: programs, belongs_to: created_by"
+    users |o--o{ programs : "has_many: programs, belongs_to: updated_by"
+    users ||--o{ refresh_tokens : "has_many: refresh_tokens, belongs_to: user"
+    roadmaps ||--o{ roadmap_branches : "has_many: roadmap_branches, belongs_to: roadmap"
+    roadmap_nodes ||--o{ roadmap_node_sections : "has_many: roadmap_node_sections, belongs_to: node"
+    roadmap_branches ||--o{ roadmap_nodes : "has_many: roadmap_nodes, belongs_to: branch"
+    users |o--o{ roadmaps : "has_many: roadmaps, belongs_to: created_by"
+    programs |o--o{ roadmaps : "has_many: roadmaps, belongs_to: program"
+    users |o--o{ roadmaps : "has_many: roadmaps, belongs_to: updated_by"
+    users |o--o{ scholarships : "has_many: scholarships, belongs_to: created_by"
+    users |o--o{ scholarships : "has_many: scholarships, belongs_to: updated_by"
+    users |o--o{ site_content : "has_many: site_content, belongs_to: created_by"
+    users |o--o{ site_content : "has_many: site_content, belongs_to: updated_by"
+    users |o--o{ staff_invitations : "has_many: staff_invitations, belongs_to: accepted_user"
+    users |o--o{ staff_invitations : "has_many: staff_invitations, belongs_to: invited_by"
+    users ||--o{ staff_permissions : "has_many: staff_permissions, belongs_to: user"
+    programs |o--o{ student_profiles : "has_many: student_profiles, belongs_to: preferred_program"
+    users ||--o{ student_profiles : "has_many: student_profiles, belongs_to: user"
+    users |o--o{ test_subjects : "has_many: test_subjects, belongs_to: created_by"
+    users |o--o{ test_subjects : "has_many: test_subjects, belongs_to: updated_by"
+    test_subjects ||--o{ test_topics : "has_many: test_topics, belongs_to: subject"

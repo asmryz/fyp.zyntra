@@ -1,0 +1,292 @@
+/* Scholarship infographic (inspired by step-by-step process infographics) */
+
+.sch {
+  display: grid;
+  gap: 32px;
+}
+
+.sch-header {
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  background: var(--blue);
+}
+
+.sch-header p {
+  color: var(--text);
+}
+
+.sch-header .badge {
+  background: var(--navy);
+}
+
+.sch-title {
+  margin: 12px 0 8px;
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  font-weight: 800;
+}
+
+.sch-summary {
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.sch-section-title {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+
+/* ---------- Steps: vertical on small screens ---------- */
+
+.sch-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: grid;
+  gap: 18px;
+}
+
+.sch-steps::before {
+  content: '';
+  position: absolute;
+  left: 25px;
+  top: 10px;
+  bottom: 10px;
+  border-left: 3px solid var(--blue-light);
+}
+
+.sch-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.sch-step-marker {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--blue);
+  border: 4px solid var(--navy);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.sch-step-marker.is-last {
+  background: var(--orange);
+  color: var(--ink);
+}
+
+.sch-step-content {
+  grid-column: 2;
+  grid-row: 1;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+
+.sch-step-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+
+.sch-step-content h4 {
+  margin: 4px 0;
+  font-size: 1.05rem;
+}
+
+.sch-step-content p {
+  font-size: 0.9rem;
+}
+
+/* ---------- Steps: horizontal timeline on wide screens ---------- */
+
+@media (min-width: 1000px) {
+  .sch-steps {
+    grid-template-columns: repeat(var(--step-count), minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .sch-steps::before {
+    left: 6%;
+    right: 6%;
+    top: 50%;
+    bottom: auto;
+    border-left: none;
+    border-top: 3px solid var(--blue-light);
+  }
+
+  .sch-step {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto 1fr;
+    justify-items: center;
+    gap: 14px;
+  }
+
+  .sch-step-marker {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .sch-step-content {
+    grid-column: 1;
+    width: 100%;
+    text-align: center;
+  }
+
+  .sch-step.is-top .sch-step-content {
+    grid-row: 1;
+    align-self: end;
+  }
+
+  .sch-step.is-bottom .sch-step-content {
+    grid-row: 3;
+    align-self: start;
+  }
+}
+
+/* ---------- Information panels ---------- */
+
+.sch-panels {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 820px) {
+  .sch-panels {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.sch-panel {
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+
+.sch-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.sch-panel-head .icon {
+  color: #93c5fd;
+}
+
+.sch-panel-head h3 {
+  font-size: 1.1rem;
+}
+
+.sch-panel-number {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--orange);
+}
+
+.sch-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.sch-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--text-2);
+  font-size: 0.93rem;
+}
+
+.sch-list .icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--success);
+}
+
+/* ---------- Scholarship selector ---------- */
+
+.sch-layout {
+  display: grid;
+  gap: 24px;
+}
+
+.sch-picker {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.sch-picker-button {
+  display: grid;
+  gap: 2px;
+  min-width: 200px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sch-picker-button:hover {
+  border-color: var(--line-strong);
+}
+
+.sch-picker-button[aria-pressed='true'] {
+  border-color: var(--orange);
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.sch-picker-title {
+  font-weight: 700;
+  font-size: 0.93rem;
+}
+
+.sch-picker-type {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+@media (min-width: 1100px) {
+  .sch-layout {
+    grid-template-columns: 260px 1fr;
+    align-items: start;
+  }
+
+  .sch-picker {
+    flex-direction: column;
+    overflow: visible;
+    position: sticky;
+    top: 88px;
+  }
+
+  .sch-picker-button {
+    min-width: 0;
+    width: 100%;
+  }
+}

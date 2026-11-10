@@ -1,0 +1,763 @@
+/*
+ * Student dashboard theme (desktop), same palette as the public website
+ * (styles/public-theme.css): aqua, coral-red and ink colour blocks.
+ *
+ *   Aqua        #19E8C9  page background, headlines on ink, badges, progress
+ *   Coral       #FF4B3E  subject cards, scholarship header, buttons, sidebar headings
+ *   Ink         #0E0E0E  top bar, panels, roadmap cards, home banner (sidebar is black #0B0B0B)
+ *   Ink raised  #1C1C1C  inputs and boxes inside ink panels
+ *   Off-white   #F4F4EF  text on ink (text only, never a surface)
+ *   Black text  #0B0B0B  text on aqua and coral
+ *
+ * This is deliberately unlike the admin console (dark navy sidebar and
+ * slate cards): the student sidebar is pure black, the page is aqua, and content
+ * sits on ink and coral blocks.
+ *
+ * Everything is scoped to .theme-student, which only StudentConsole sets on
+ * the dashboard layout. The roadmap itself (.rm) is not restyled here; it
+ * keeps its own look from styles/roadmap.css.
+ */
+.theme-student {
+  --ink: #0e0e0e;
+  --ink-raised: #1c1c1c;
+  --aqua: #19e8c9;
+  --coral: #ff4b3e;
+  --coral-hover: #ff6a5f;
+  --paper: #f4f4ef;
+  --black: #0b0b0b;
+
+  /* On the aqua page and coral blocks: black text */
+  --text: var(--black);
+  --text-2: #10201d;
+  --muted: #0f3d36;
+  --ink-text: var(--black);
+  --line: rgba(11, 11, 11, 0.2);
+  --line-strong: rgba(11, 11, 11, 0.5);
+  --card: var(--ink);
+  --card-raised: var(--ink-raised);
+  --input-bg: var(--ink-raised);
+  --success: var(--aqua);
+  --error: var(--coral);
+  --warning: var(--coral);
+
+  --radius: 12px;
+  --radius-lg: 22px;
+
+  min-height: 100vh;
+  background: var(--aqua);
+  color: var(--text);
+  color-scheme: light;
+}
+
+/* Ink surfaces: off-white text with aqua accents */
+.theme-student .dash-topbar,
+.theme-student .panel,
+.theme-student .page-header-hero,
+.theme-student .program-card,
+.theme-student .sch-step-content,
+.theme-student .sch-panel,
+.theme-student .sch-picker-button,
+.theme-student .empty-state {
+  --text: var(--paper);
+  --text-2: #d9d9d2;
+  --muted: #b9b9b2;
+  --line: rgba(244, 244, 239, 0.16);
+  --line-strong: rgba(244, 244, 239, 0.4);
+  color: var(--paper);
+  color-scheme: dark;
+}
+
+.theme-student :focus-visible {
+  outline-color: var(--coral);
+}
+
+.theme-student ::selection {
+  background: var(--coral);
+  color: var(--black);
+}
+
+.theme-student h1,
+.theme-student h2,
+.theme-student h3,
+.theme-student h4 {
+  color: var(--text);
+}
+
+.theme-student p {
+  color: var(--text-2);
+}
+
+/* ---------- Sidebar: black block ---------- */
+
+.theme-student .dash-sidebar {
+  padding: 22px 16px;
+  background: var(--black);
+  border-right: none;
+}
+
+.theme-student .dash-sidebar-top {
+  border-bottom: 1px solid rgba(244, 244, 239, 0.16);
+}
+
+.theme-student .logo,
+.theme-student .logo-word {
+  color: var(--paper);
+}
+
+.theme-student .logo-subtitle {
+  color: #b9b9b2;
+}
+
+/* Aqua circle with a coral block behind it, as on the public site */
+.theme-student .logo-mark {
+  border-radius: 50%;
+  background: var(--aqua);
+  color: var(--black);
+  box-shadow: 8px 0 0 var(--coral);
+}
+
+.theme-student .logo-text {
+  margin-left: 8px;
+}
+
+.theme-student .dash-nav {
+  gap: 22px;
+}
+
+.theme-student .dash-nav-group {
+  gap: 4px;
+}
+
+.theme-student .dash-nav-heading {
+  color: var(--coral);
+  letter-spacing: 0.2em;
+}
+
+.theme-student .dash-nav-link {
+  padding: 12px 16px;
+  border-radius: 999px;
+  color: var(--paper);
+  font-weight: 800;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.theme-student .dash-nav-link .icon {
+  color: #b9b9b2;
+}
+
+.theme-student .dash-nav-link:hover {
+  background: var(--ink-raised);
+  color: var(--paper);
+}
+
+.theme-student .dash-nav-link:hover .icon {
+  color: var(--aqua);
+}
+
+/* Selected item: aqua pill with black text */
+.theme-student .dash-nav-link.active {
+  background: var(--aqua);
+  color: var(--black);
+}
+
+.theme-student .dash-nav-link.active .icon {
+  color: var(--black);
+}
+
+.theme-student .dash-logout {
+  border-top: 1px solid rgba(244, 244, 239, 0.16);
+  border-radius: 0;
+}
+
+/* ---------- Top bar: ink ---------- */
+
+.theme-student .dash-topbar {
+  min-height: 68px;
+  background: var(--ink);
+  border-bottom: none;
+}
+
+.theme-student .dash-console-name {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper);
+}
+
+.theme-student .dash-user-name {
+  color: var(--paper);
+}
+
+.theme-student .dash-topbar .badge {
+  background: var(--aqua);
+  border-color: var(--aqua);
+  color: var(--black);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.theme-student .dash-main {
+  padding-top: 36px;
+}
+
+/* ---------- Page headers: big, heavy, tight ---------- */
+
+.theme-student .page-header {
+  margin-bottom: 30px;
+}
+
+.theme-student .page-header h1 {
+  font-size: clamp(2.3rem, 3.4vw, 3.3rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  color: var(--black);
+}
+
+.theme-student .page-header-description {
+  margin-top: 12px;
+  font-size: 1.05rem;
+  color: var(--text-2);
+}
+
+/* Home page: an ink block with an aqua headline, like the reference hero */
+.theme-student .page-header-hero {
+  padding: 44px 44px 40px;
+  border-radius: 28px;
+  background: var(--ink);
+}
+
+.theme-student .page-header-hero h1 {
+  font-size: clamp(2.6rem, 4.4vw, 4.2rem);
+  color: var(--aqua);
+}
+
+.theme-student .page-header-hero .page-header-description {
+  color: var(--paper);
+}
+
+.theme-student .back-link {
+  color: var(--black);
+  font-weight: 800;
+}
+
+.theme-student .back-link:hover {
+  color: #3a0d08;
+}
+
+/* ---------- Panels and cards ---------- */
+
+.theme-student .panel {
+  padding: 26px 28px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--ink);
+}
+
+.theme-student .panel + .panel,
+.theme-student .two-column > .panel + .panel {
+  margin-top: 20px;
+}
+
+.theme-student .panel-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--aqua);
+}
+
+/* Subject lists: separate coral cards */
+.theme-student .record-list {
+  display: grid;
+  gap: 14px;
+  border: none;
+  background: transparent;
+}
+
+.theme-student .record-row,
+.theme-student .record-row + .record-row {
+  padding: 22px 26px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--coral);
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.theme-student .record-row:hover {
+  transform: translateY(-2px);
+  border-color: var(--black);
+}
+
+.theme-student .record-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--black);
+}
+
+.theme-student .record-row p,
+.theme-student .record-meta {
+  color: var(--black);
+}
+
+.theme-student .topic-list {
+  border-top-color: var(--line);
+}
+
+.theme-student .topic-link {
+  padding-inline: 12px;
+  border-bottom-color: var(--line);
+  border-radius: var(--radius);
+  color: var(--paper);
+}
+
+.theme-student .topic-link:hover {
+  background: var(--ink-raised);
+}
+
+.theme-student .topic-link:hover .topic-title {
+  color: var(--aqua);
+}
+
+.theme-student .resource-item {
+  border-color: var(--line);
+  border-radius: var(--radius);
+  background: var(--ink-raised);
+}
+
+.theme-student .resource-item .icon {
+  color: var(--coral);
+}
+
+.theme-student .resource-item a {
+  color: var(--paper);
+}
+
+.theme-student .quick-links {
+  border: none;
+  background: transparent;
+  gap: 14px;
+}
+
+.theme-student .quick-link {
+  border-radius: var(--radius-lg);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.theme-student .quick-link h3 {
+  color: var(--aqua);
+}
+
+.theme-student .quick-link p {
+  color: #d9d9d2;
+}
+
+.theme-student .quick-link-icon {
+  background: var(--coral);
+  color: var(--black);
+}
+
+/* Profile completeness: aqua bar on a raised ink track */
+.theme-student .meter {
+  height: 12px;
+  background: #2a2a2a;
+}
+
+.theme-student .meter-fill {
+  background: var(--aqua);
+}
+
+.theme-student .detail-list div {
+  border-bottom-color: var(--line);
+}
+
+.theme-student .check-mark {
+  color: var(--aqua);
+}
+
+/* ---------- Links and buttons ---------- */
+
+.theme-student .text-link,
+.theme-student .link-button {
+  color: var(--black);
+  text-decoration-color: var(--coral);
+  text-decoration-thickness: 2px;
+}
+
+.theme-student .panel .text-link,
+.theme-student .panel .link-button {
+  color: var(--aqua);
+}
+
+.theme-student .btn {
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.theme-student .btn-primary {
+  background: var(--coral);
+  color: var(--black);
+}
+
+.theme-student .btn-primary:hover:not(:disabled) {
+  background: var(--coral-hover);
+}
+
+/* Secondary buttons: black outline on aqua and coral, aqua outline on ink */
+.theme-student .btn-secondary {
+  border: 2px solid var(--black);
+  background: transparent;
+  color: var(--black);
+}
+
+.theme-student .btn-secondary:hover:not(:disabled) {
+  border-color: var(--black);
+  background: var(--black);
+  color: var(--aqua);
+}
+
+.theme-student .panel .btn-secondary {
+  border-color: var(--aqua);
+  color: var(--aqua);
+}
+
+.theme-student .panel .btn-secondary:hover:not(:disabled) {
+  background: var(--aqua);
+  color: var(--black);
+}
+
+.theme-student .btn-ghost {
+  color: var(--black);
+}
+
+.theme-student .btn-ghost:hover:not(:disabled) {
+  background: rgba(11, 11, 11, 0.1);
+  color: var(--black);
+}
+
+/* ---------- Forms (inside ink panels) ---------- */
+
+.theme-student .field-label {
+  color: var(--paper);
+}
+
+.theme-student .field-hint {
+  color: var(--muted);
+}
+
+.theme-student .input,
+.theme-student .select,
+.theme-student .textarea {
+  border: 1.5px solid rgba(244, 244, 239, 0.3);
+  border-radius: var(--radius);
+  background: var(--ink-raised);
+  color: var(--paper);
+}
+
+.theme-student .select option {
+  background: var(--ink-raised);
+  color: var(--paper);
+}
+
+.theme-student .input::placeholder,
+.theme-student .textarea::placeholder {
+  color: #8f8f88;
+}
+
+.theme-student .input:focus,
+.theme-student .select:focus,
+.theme-student .textarea:focus {
+  border-color: var(--aqua);
+  box-shadow: 0 0 0 3px rgba(25, 232, 201, 0.3);
+}
+
+.theme-student .form-section {
+  border-top-color: var(--line);
+}
+
+.theme-student .form-section-title {
+  color: var(--coral);
+}
+
+.theme-student .checkbox-row input {
+  accent-color: var(--aqua);
+}
+
+/* ---------- Badges, alerts and loading states ---------- */
+
+.theme-student .badge {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.theme-student .badge-published {
+  background: var(--aqua);
+  border-color: var(--aqua);
+  color: var(--black);
+}
+
+.theme-student .badge-blue {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--aqua);
+}
+
+.theme-student .badge-orange {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: var(--black);
+}
+
+.theme-student .alert {
+  border-radius: var(--radius);
+  border-color: var(--black);
+  background: var(--coral);
+  color: var(--black);
+}
+
+.theme-student .empty-state {
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--ink);
+}
+
+.theme-student .skeleton {
+  background: linear-gradient(90deg, #262626 0%, #333333 50%, #262626 100%);
+  background-size: 200% 100%;
+}
+
+/* ---------- Roadmap program cards (Program & Career Roadmaps page) ---------- */
+
+.theme-student .program-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 22px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ink cards with an aqua title; a coral outline and lift on hover */
+.theme-student .program-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
+  padding: 26px;
+  border: 3px solid var(--ink);
+  border-radius: 24px;
+  background: var(--ink);
+  text-decoration: none;
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.theme-student .program-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--coral);
+}
+
+.theme-student .program-card:focus-visible {
+  outline: 3px solid var(--coral);
+  outline-offset: 3px;
+}
+
+.theme-student .program-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.theme-student .program-card-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--aqua);
+  color: var(--black);
+}
+
+.theme-student .program-card-category {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--coral);
+  color: var(--black);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theme-student .program-card-body {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+}
+
+.theme-student .program-card-title {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--aqua);
+}
+
+.theme-student .program-card-subtitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--paper);
+}
+
+.theme-student .program-card-summary {
+  margin-top: 4px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #d9d9d2;
+}
+
+.theme-student .program-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-student .program-card-meta span {
+  padding: 4px 11px;
+  border: 1.5px solid rgba(244, 244, 239, 0.4);
+  border-radius: 999px;
+  color: var(--paper);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.theme-student .program-card-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--coral);
+  color: var(--black);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- Roadmap heading readability ---------- */
+
+/* The general .theme-student h2/h3 rule above would turn the roadmap's own
+   headings near-black on their dark and coloured boxes. The program heading
+   uses the theme's ink and aqua (same size and position as before), and
+   branch headings keep the readable text colour roadmapColors.js picks for
+   each branch colour. */
+.theme-student .rm-root-title {
+  background: var(--ink);
+  color: var(--aqua);
+}
+
+.theme-student .rm-branch {
+  color: var(--branch-on);
+}
+
+/* ---------- Scholarship infographic ---------- */
+
+/* Header: coral block with black text */
+.theme-student .sch-header {
+  border-radius: 28px;
+  background: var(--coral);
+}
+
+.theme-student .sch-header,
+.theme-student .sch-header h2,
+.theme-student .sch-header p {
+  color: var(--black);
+}
+
+.theme-student .sch-header .badge {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--aqua);
+}
+
+.theme-student .sch-section-title {
+  color: var(--black);
+}
+
+.theme-student .sch-steps::before {
+  border-color: var(--black);
+}
+
+/* The ring around each step number matches the aqua page */
+.theme-student .sch-step-marker {
+  background: var(--ink);
+  border-color: var(--aqua);
+  color: var(--aqua);
+}
+
+.theme-student .sch-step-marker.is-last {
+  background: var(--coral);
+  color: var(--black);
+}
+
+.theme-student .sch-step-content,
+.theme-student .sch-panel {
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--ink);
+}
+
+.theme-student .sch-step-content h4,
+.theme-student .sch-panel-head h3 {
+  color: var(--aqua);
+}
+
+.theme-student .sch-step-label,
+.theme-student .sch-panel-number {
+  color: var(--coral);
+}
+
+.theme-student .sch-panel-head .icon,
+.theme-student .sch-list .icon {
+  color: var(--aqua);
+}
+
+.theme-student .sch-list li {
+  color: #d9d9d2;
+}
+
+.theme-student .sch-picker-button {
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.theme-student .sch-picker-button:hover {
+  border-color: var(--coral);
+}
+
+.theme-student .sch-picker-type {
+  color: var(--muted);
+}
+
+.theme-student .sch-picker-button[aria-pressed='true'] {
+  background: var(--coral);
+  border-color: var(--black);
+  color: var(--black);
+}
+
+.theme-student .sch-picker-button[aria-pressed='true'] .sch-picker-type {
+  color: var(--black);
+}
+
+/* ---------- Assistant chat (kept for when the AI service is connected) ---------- */
+
+.theme-student .chat-message.from-user {
+  background: var(--coral);
+  color: var(--black);
+}
