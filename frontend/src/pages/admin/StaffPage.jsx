@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { EditorDialog, PermissionMatrix, PermissionTags } from '../../components/admin/AdminParts'
 import { PageHeader } from '../../components/layout/DashboardLayout'
 import { Alert, EmptyState, PageLoader, SkeletonList } from '../../components/ui/Feedback'
+import { LIMITS } from '../../utils/limits'
 import FormField from '../../components/ui/FormField'
 import Icon from '../../components/ui/Icon'
 import { useToast } from '../../context/ToastContext'
@@ -11,7 +12,7 @@ import { useConfirm } from '../../hooks/useConfirm'
 import { useFormOptions } from '../../hooks/useFormOptions'
 import { usePageTitle } from '../../hooks/usePageTitle'
 import { api } from '../../services/api'
-import { formatDate, formatDateTime } from '../../utils/format'
+import { formatDateTime } from '../../utils/format'
 import { validateEmail, validateFullName } from '../../utils/validation'
 
 const INVITATION_BADGES = {
@@ -75,7 +76,7 @@ function InviteForm({ options, onInvited }) {
       </div>
       <Alert type="error">{serverError}</Alert>
       <div className="form-grid">
-        <FormField label="Full name" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} error={errors.fullName} />
+        <FormField label="Full name" maxLength={LIMITS.fullName} value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} error={errors.fullName} />
         <FormField
           label="Email address"
           type="email"
@@ -283,10 +284,11 @@ export default function StaffPage() {
                       <span className={`badge ${INVITATION_BADGES[invitation.status]}`}>{invitation.status}</span>
                     </td>
                     <td>
-                      {formatDate(invitation.created_at)}
+                      {/* Sent, accepted and expiry times all use the same date-and-time format (viewer's local time) */}
+                      {formatDateTime(invitation.created_at)}
                       {invitation.invited_by_name && <span className="cell-secondary">by {invitation.invited_by_name}</span>}
                     </td>
-                    <td>{invitation.status === 'accepted' ? `Accepted ${formatDate(invitation.accepted_at)}` : formatDateTime(invitation.expires_at)}</td>
+                    <td>{invitation.status === 'accepted' ? `Accepted ${formatDateTime(invitation.accepted_at)}` : formatDateTime(invitation.expires_at)}</td>
                     <td className="cell-actions">
                       {invitation.status !== 'accepted' && (
                         <button type="button" className="btn btn-secondary btn-sm" onClick={() => resend(invitation)}>

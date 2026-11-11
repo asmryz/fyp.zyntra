@@ -13,11 +13,14 @@ from app.models.base import PublishableMixin, TimestampMixin
 
 class TestSubject(TimestampMixin, PublishableMixin, Base):
     __tablename__ = "test_subjects"
+    __table_args__ = (
+        CheckConstraint("sort_order BETWEEN 1 AND 100", name="ck_test_subjects_sort_order_range"),
+    )
 
     id = Column(Integer, primary_key=True)
     name = Column(String(150), nullable=False)
     description = Column(Text)
-    sort_order = Column(Integer, nullable=False, default=0, server_default="0")
+    sort_order = Column(Integer, nullable=False, default=1, server_default="1")
 
     topics = relationship(
         "TestTopic", back_populates="subject", cascade="all, delete-orphan", passive_deletes=True,
@@ -34,6 +37,7 @@ class TestTopic(TimestampMixin, Base):
     __table_args__ = (
         # The same title may be used again under a different subject
         UniqueConstraint("subject_id", "title", name="uq_test_topics_subject_title"),
+        CheckConstraint("sort_order BETWEEN 1 AND 100", name="ck_test_topics_sort_order_range"),
     )
 
     id = Column(Integer, primary_key=True)
@@ -41,7 +45,7 @@ class TestTopic(TimestampMixin, Base):
     title = Column(String(200), nullable=False)
     explanation = Column(Text)
     status = Column(String(20), nullable=False, default="draft", server_default="draft")
-    sort_order = Column(Integer, nullable=False, default=0, server_default="0")
+    sort_order = Column(Integer, nullable=False, default=1, server_default="1")
 
     subject = relationship("TestSubject", back_populates="topics")
     resources = relationship("LearningResource", back_populates="topic", passive_deletes=True)
@@ -55,6 +59,9 @@ class LearningResource(TimestampMixin, Base):
         CheckConstraint(
             "resource_type IN ('video', 'article', 'pdf', 'link')", name="ck_learning_resources_type",
         ),
+        # Only web links: rows inserted directly in the database cannot store javascript: or data: URLs
+        CheckConstraint("url ~* '^https?://'", name="ck_learning_resources_url_http"),
+        CheckConstraint("sort_order BETWEEN 1 AND 100", name="ck_learning_resources_sort_order_range"),
     )
 
     id = Column(Integer, primary_key=True)
@@ -65,7 +72,7 @@ class LearningResource(TimestampMixin, Base):
     url = Column(String(500), nullable=False)
     resource_type = Column(String(30), nullable=False, default="link")  # see constants.RESOURCE_TYPES
     description = Column(String(300))
-    sort_order = Column(Integer, nullable=False, default=0, server_default="0")
+    sort_order = Column(Integer, nullable=False, default=1, server_default="1")
 
     subject = relationship("TestSubject", back_populates="resources")
     topic = relationship("TestTopic", back_populates="resources")

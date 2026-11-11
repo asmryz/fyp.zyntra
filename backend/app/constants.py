@@ -52,6 +52,25 @@ class CodePurpose:
 # General education categories used by the student profile and by the
 # program eligibility criteria. These are not SZABIST policy; admins choose
 # which of them a program accepts.
+# Allowed range of every "Display order" (sort_order) field: programs,
+# scholarships, test subjects, topics and learning resources
+DISPLAY_ORDER_MIN = 1
+DISPLAY_ORDER_MAX = 100
+
+# Input size limits shared by the API schemas (the frontend mirrors them in
+# src/utils/limits.js). Long texts are descriptions, explanations and similar;
+# the longest stored value when these were introduced was under 1,000 characters.
+LONG_TEXT_MAX = 10_000
+LIST_ITEM_MAX = 500        # one line of a list such as eligibility criteria
+LIST_MAX_ITEMS = 50
+MARKS_MAX = 100_000        # obtained / total marks
+SEARCH_MAX = 100           # admin search boxes
+MAX_REQUEST_BYTES = 1_000_000  # whole JSON request body
+
+# Website contact phone: digits only, optionally starting with + (country code).
+# Stored as text so leading zeros and the + are kept.
+PHONE_PATTERN = r"^\+?[0-9]{7,15}$"
+
 QUALIFICATIONS = [
     "Intermediate (HSSC)",
     "A-Levels",

@@ -32,7 +32,8 @@ SITE_CONTENT = [
      f"{MARK} Add general admission guidance here, such as the admission cycle, application steps and official "
      "contact points. Always refer students to official SZABIST sources for final information."),
     ("contact_email", "Email", f"{MARK} contact email address"),
-    ("contact_phone", "Phone", f"{MARK} contact phone number"),
+    # The phone holds digits only (database CHECK), so it starts empty and is hidden until set
+    ("contact_phone", "Phone", ""),
 ]
 
 
@@ -93,8 +94,6 @@ def add_roadmap(db, program):
         return
     roadmap = Roadmap(
         title=title,
-        category="Career roadmap",
-        summary="Sample structure showing branches, steps and step details. Content will be replaced.",
         description="This roadmap demonstrates the layout only. The real roadmap content will be provided later.",
         program_id=program.id,
         status="published",

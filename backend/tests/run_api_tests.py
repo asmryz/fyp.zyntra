@@ -487,8 +487,9 @@ def test_roadmaps(root, staff, student):
         staff_id = staff[label]["client"].get("/api/auth/me")[1]["id"]
         root.put(f"/api/admin/staff/{staff_id}/permissions", {"permissions": {"scholarships": "read", "roadmaps": level}})
 
-    status, data = editor.post("/api/admin/roadmaps", {"title": f"Computer Science {RUN_ID}", "category": "Program roadmap"})
+    status, data = editor.post("/api/admin/roadmaps", {"title": f"Computer Science {RUN_ID}"})
     check("staff with roadmap write access creates roadmap", status == 201, f"{status} {data}")
+    check("roadmap responses no longer contain category or summary", status == 201 and not {"category", "summary"} & set(data))
     roadmap_id = data["id"]
 
     status, b1 = editor.post(f"/api/admin/roadmaps/{roadmap_id}/branches", {"name": "Software Development"})
@@ -675,6 +676,178 @@ def test_programs_and_eligibility(editor, student):
     check("draft program hidden from public", status == 404)
 
 
+def program_body(program, **changes):
+    """The full edit form of a program as the dashboard sends it, with some fields changed."""
+    fields = ("name", "department", "degree_level", "duration", "summary", "description", "admission_requirements",
+              "min_percentage", "accepted_qualifications", "eligibility_notes", "status", "sort_order")
+    return {**{field: program[field] for field in fields}, **changes}
+
+
+def test_program_editing(root):
+    print("\nProgram editing (records inserted directly in the database) and display order")
+    from sqlalchemy import text
+    name = f"Legacy Program t{RUN_ID}"
+    legacy_qualifications = ["Intermediate (HSSC)", "12th Grade", "Bachelor\\u0027s degree (16 years)"]
+    db = SessionLocal()
+    try:
+        # Inserted the way the 8 programs were added in Neon: plain SQL, no creator, non-standard qualifications
+        program_id = db.execute(text(
+            "INSERT INTO programs (name, slug, department, summary, min_percentage, accepted_qualifications, status, sort_order) "
+            "VALUES (:name, :slug, 'Test Department', 'Original summary', 50, CAST(:quals AS jsonb), 'draft', 99) RETURNING id"
+        ), {"name": name, "slug": f"legacy-program-t{RUN_ID}", "quals": json.dumps(legacy_qualifications)}).scalar()
+        db.commit()
+        other = db.query(Program).filter(Program.id != program_id).order_by(Program.id).first()
+        other_id, other_before = (other.id, (other.updated_at, other.summary)) if other else (None, None)
+    finally:
+        db.close()
+
+    status, programs = root.get("/api/admin/programs")
+    record = next((p for p in programs if p["id"] == program_id), None) if status == 200 else None
+    check("SQL-inserted program is listed and editable", record is not None and record["can_edit"], str(record))
+
+    status, data = root.put(f"/api/admin/programs/{program_id}", program_body(record, summary=f"Edited summary {RUN_ID}"))
+    check("SQL-inserted program with non-standard qualifications can be updated", status == 200, f"{status} {data}")
+    db = SessionLocal()
+    try:
+        saved = db.get(Program, program_id)
+        check("update is stored in the database", saved.summary == f"Edited summary {RUN_ID}")
+        check("existing qualifications and other fields are kept",
+              saved.accepted_qualifications == legacy_qualifications and saved.department == "Test Department"
+              and float(saved.min_percentage) == 50 and saved.sort_order == 99 and saved.name == name,
+              f"{saved.accepted_qualifications} {saved.department} {saved.min_percentage} {saved.sort_order}")
+        if other_before:
+            other = db.get(Program, other_id)
+            check("editing one program does not change another", (other.updated_at, other.summary) == other_before)
+    finally:
+        db.close()
+
+    status, data = root.put(f"/api/admin/programs/{program_id}",
+                            program_body(record, accepted_qualifications=["Intermediate (HSSC)", "Made-up qualification"]))
+    check("a new non-standard qualification is rejected (422)", status == 422 and "Made-up qualification" in str(data), f"{status}")
+    status, data = root.put(f"/api/admin/programs/{program_id}",
+                            program_body(record, accepted_qualifications=["Intermediate (HSSC)", "A-Levels"]))
+    check("an existing qualification can be removed and a standard one added",
+          status == 200 and data["accepted_qualifications"] == ["Intermediate (HSSC)", "A-Levels"], f"{status}")
+    record = data if status == 200 else record
+    status, data = root.post("/api/admin/programs", {"name": f"Bad Quals t{RUN_ID}", "accepted_qualifications": ["12th Grade"]})
+    check("a new program cannot use a non-standard qualification (422)", status == 422, str(status))
+
+    cases = {1: 200, 100: 200, 50: 200, 0: 422, -1: 422, -100: 422, 101: 422, 1.5: 422, None: 422, "": 422, "abc": 422, "7": 422}
+    outcome = {repr(value): root.put(f"/api/admin/programs/{program_id}", program_body(record, sort_order=value))[0]
+               for value in cases}
+    expected = {repr(value): code for value, code in cases.items()}
+    check("display order: 1, 50 and 100 accepted; 0, negatives, 101, 1.5, empty, text and numbers sent as text rejected",
+          outcome == expected, str(outcome))
+    status, _ = root.put(f"/api/admin/programs/{program_id}", program_body(record, sort_order=True))
+    check("display order true/false rejected (422)", status == 422, str(status))
+    status, _ = root.put(f"/api/admin/programs/{program_id}", program_body(record, sort_order=50))
+    status, data = root.put(f"/api/admin/programs/{program_id}", program_body(record, sort_order=-5))
+    check("display order error message is clear", status == 422 and "whole number from 1 to 100" in str(data), str(data))
+
+    db = SessionLocal()
+    try:
+        for value in (0, 101):
+            try:
+                db.execute(text("UPDATE programs SET sort_order = :v WHERE id = :id"), {"v": value, "id": program_id})
+                db.commit()
+                rejected = False
+            except Exception as error:  # noqa: BLE001 - the CHECK constraint violation is what is being tested
+                db.rollback()
+                rejected = "ck_programs_sort_order_range" in str(error)
+            check(f"database CHECK rejects display order {value}", rejected)
+        check("last accepted display order (50) is stored", db.get(Program, program_id).sort_order == 50)
+    finally:
+        db.close()
+
+    status, created = root.post("/api/admin/programs", {"name": f"New Program t{RUN_ID}", "status": "draft"})
+    check("creating a program without a display order uses 1", status == 201 and created["sort_order"] == 1, f"{status}")
+    status, _ = root.delete(f"/api/admin/programs/{created['id']}") if status == 201 else (None, None)
+    check("program deletion still works", status == 200)
+    status, _ = root.delete(f"/api/admin/programs/{program_id}")
+    check("SQL-inserted program can be deleted", status == 200)
+
+
+ORDER_CASES = {1: 200, 100: 200, 50: 200, 0: 422, -1: 422, -100: 422, 101: 422, 1.5: 422, None: 422, "": 422}
+
+
+def test_display_order_all_forms(root):
+    """Scholarships, test subjects, topics and learning resources: the same 1-100 display order rule."""
+    print("\nDisplay order 1-100 on scholarships, test subjects, topics and resources")
+    from sqlalchemy import text
+    _, scholarship = root.post("/api/admin/scholarships", {"title": f"Order Scholarship {RUN_ID}"})
+    _, subject = root.post("/api/admin/test-prep/subjects", {"name": f"Order Subject {RUN_ID}"})
+    _, topic = root.post(f"/api/admin/test-prep/subjects/{subject['id']}/topics", {"title": "Order Topic"})
+    _, resource = root.post(f"/api/admin/test-prep/subjects/{subject['id']}/resources", {
+        "title": "Order Resource", "url": "https://example.org"})
+    check("new records without a display order get 1",
+          [scholarship.get("sort_order"), subject.get("sort_order"), topic.get("sort_order"), resource.get("sort_order")] == [1, 1, 1, 1])
+    forms = {
+        "scholarship": (f"/api/admin/scholarships/{scholarship['id']}", {"title": f"Order Scholarship {RUN_ID}"}, "scholarships", scholarship["id"]),
+        "test subject": (f"/api/admin/test-prep/subjects/{subject['id']}", {"name": f"Order Subject {RUN_ID}"}, "test_subjects", subject["id"]),
+        "topic": (f"/api/admin/test-prep/topics/{topic['id']}", {"title": "Order Topic"}, "test_topics", topic["id"]),
+        "learning resource": (f"/api/admin/test-prep/resources/{resource['id']}", {"title": "Order Resource", "url": "https://example.org"},
+                              "learning_resources", resource["id"]),
+    }
+    for label, (path, body, table, record_id) in forms.items():
+        outcome = {repr(value): root.put(path, {**body, "sort_order": value})[0] for value in ORDER_CASES}
+        expected = {repr(value): code for value, code in ORDER_CASES.items()}
+        check(f"{label}: API accepts 1, 50, 100 and rejects 0, -1, -100, 101, 1.5 and empty", outcome == expected, str(outcome))
+        db = SessionLocal()
+        try:
+            rejected = []
+            for value in (0, 101):
+                try:
+                    db.execute(text(f"UPDATE {table} SET sort_order = :v WHERE id = :id"), {"v": value, "id": record_id})
+                    db.commit()
+                except Exception as error:  # noqa: BLE001 - the CHECK constraint violation is what is being tested
+                    db.rollback()
+                    rejected.append(f"ck_{table}_sort_order_range" in str(error))
+            check(f"{label}: database CHECK rejects 0 and 101", rejected == [True, True], str(rejected))
+        finally:
+            db.close()
+    root.delete(f"/api/admin/scholarships/{scholarship['id']}")
+    root.delete(f"/api/admin/test-prep/subjects/{subject['id']}")
+
+
+def test_contact_phone(root):
+    print("\nWebsite contact phone (number only)")
+    from sqlalchemy import text
+    status, blocks = root.get("/api/admin/site-content")
+    block = next(b for b in blocks if b["key"] == "contact_phone")
+    original = block["body"]
+    base = {"title": block["title"], "status": block["status"]}
+    try:
+        for value in ("03001234567", "+923001234567", "0092300123456"):
+            status, data = root.put(f"/api/admin/site-content/{block['id']}", {**base, "body": value})
+            check(f"phone {value!r} accepted and stored exactly (leading zeros and + kept)",
+                  status == 200 and data["body"] == value, f"{status} {data}")
+        for value in ("0300-1234567", "0300 1234567", "Call 03001234567", "phone", "", "12345", "+92300123456789012", "++923001234567"):
+            status, _ = root.put(f"/api/admin/site-content/{block['id']}", {**base, "body": value})
+            check(f"phone {value!r} rejected (422)", status == 422, str(status))
+        db = SessionLocal()
+        try:
+            try:
+                db.execute(text("UPDATE site_content SET body = 'Call us' WHERE key = 'contact_phone'"))
+                db.commit()
+                rejected = False
+            except Exception as error:  # noqa: BLE001 - the CHECK constraint violation is what is being tested
+                db.rollback()
+                rejected = "ck_site_content_contact_phone" in str(error)
+            check("database CHECK rejects text in the contact phone", rejected)
+        finally:
+            db.close()
+        status, data = root.put(f"/api/admin/site-content/{next(b for b in blocks if b['key'] == 'contact_email')['id']}",
+                                {**base, "title": "Email", "body": next(b for b in blocks if b["key"] == "contact_email")["body"]})
+        check("other website content (email) is not limited to digits", status == 200, str(status))
+    finally:
+        db = SessionLocal()
+        try:
+            db.execute(text("UPDATE site_content SET body = :b WHERE key = 'contact_phone'"), {"b": original})
+            db.commit()
+        finally:
+            db.close()
+
+
 def test_site_content(root):
     print("\nWebsite content (edit only)")
     status, blocks = root.get("/api/admin/site-content")
@@ -789,6 +962,9 @@ def main():
         test_roadmaps(root, staff, student)
         test_test_prep(staff["rw"]["client"], student)
         test_programs_and_eligibility(staff["rw"]["client"], student)
+        test_program_editing(root)
+        test_display_order_all_forms(root)
+        test_contact_phone(root)
         test_site_content(root)
         test_root_management(root, staff)
     finally:

@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../../components/layout/DashboardLayout'
 import { Alert, EmptyState, SkeletonList } from '../../components/ui/Feedback'
 import Icon from '../../components/ui/Icon'
+import { LIMITS } from '../../utils/limits'
 import { useApi } from '../../hooks/useApi'
 import { usePageTitle } from '../../hooks/usePageTitle'
 import { formatDate } from '../../utils/format'
@@ -68,6 +69,7 @@ export default function UsersPage() {
           id="user-search"
           className="input"
           placeholder="Search by name or email"
+          maxLength={LIMITS.search}
           value={searchText}
           onChange={(event) => setSearchText(event.target.value)}
         />

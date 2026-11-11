@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AccessNote, EditorDialog, ModuleGuard, StatusField } from '../../../components/admin/AdminParts'
+import { AccessNote, DisplayOrderField, EditorDialog, ModuleGuard, StatusField } from '../../../components/admin/AdminParts'
 import { PageHeader } from '../../../components/layout/DashboardLayout'
 import { Alert, EmptyState, SkeletonList, StatusBadge } from '../../../components/ui/Feedback'
 import FormField from '../../../components/ui/FormField'
@@ -11,17 +11,18 @@ import { useConfirm } from '../../../hooks/useConfirm'
 import { useConsoleBase, useModuleAccess } from '../../../hooks/useModuleAccess'
 import { usePageTitle } from '../../../hooks/usePageTitle'
 import { api } from '../../../services/api'
+import { displayOrderError } from '../../../utils/validation'
 
-const EMPTY_SUBJECT = { name: '', description: '', status: 'draft', sort_order: 0 }
+const EMPTY_SUBJECT = { name: '', description: '', status: 'draft', sort_order: 1 }
 
 export function SubjectFields({ form, setForm }) {
   const set = (field) => (event) => setForm({ ...form, [field]: event.target.value })
   return (
     <div className="form-grid">
-      <FormField label="Subject name" value={form.name} onChange={set('name')} className="span-2" placeholder="e.g. Mathematics" />
+      <FormField label="Subject name" maxLength={150} value={form.name} onChange={set('name')} className="span-2" placeholder="e.g. Mathematics" />
       <FormField label="Description" optional as="textarea" className="span-2" value={form.description} onChange={set('description')} />
       <StatusField value={form.status} onChange={(status) => setForm({ ...form, status })} />
-      <FormField label="Display order" type="number" value={form.sort_order} onChange={set('sort_order')} />
+      <DisplayOrderField value={form.sort_order} onChange={set('sort_order')} />
     </div>
   )
 }
@@ -46,11 +47,15 @@ function TestPrepManagerContent() {
   const [error, setError] = useState(null)
 
   async function create() {
+    if (displayOrderError(form.sort_order)) {
+      setError('Please correct the highlighted field.')
+      return
+    }
     setSaving(true)
     setError(null)
     try {
-      await api.post('/api/admin/test-prep/subjects', { ...form, sort_order: Number(form.sort_order) || 0 })
-      toast.success('Subject created. Open it to add topics and resources.')
+      await api.post('/api/admin/test-prep/subjects', { ...form, sort_order: Number(form.sort_order) })
+      toast.success('Subject created. Select Edit to add topics and resources.')
       setForm(null)
       subjects.reload()
     } catch (err) {
@@ -121,7 +126,7 @@ function TestPrepManagerContent() {
                 </div>
                 <div className="record-actions">
                   <Link to={`${base}/test-prep/subjects/${subject.id}`} className="btn btn-secondary btn-sm">
-                    <Icon name={subject.can_edit ? 'edit' : 'file'} size={16} /> {subject.can_edit ? 'Manage' : 'View'}
+                    <Icon name={subject.can_edit ? 'edit' : 'file'} size={16} /> {subject.can_edit ? 'Edit' : 'View'}
                   </Link>
                   {subject.can_edit && (
                     <button type="button" className="btn btn-danger btn-sm" onClick={() => remove(subject)}>

@@ -1,17 +1,22 @@
 """Schemas for admission-test preparation content."""
 from pydantic import Field, field_validator
 
-from app.constants import RESOURCE_TYPES
-from app.schemas.content import AdminRecordOut, InputModel, OutputModel, StatusField, check_url
+from app.constants import LONG_TEXT_MAX, RESOURCE_TYPES
+from app.schemas.content import AdminRecordOut, InputModel, OutputModel, StatusField, check_display_order, check_url
 
 
 # ---------- Admin: subjects, topics, resources ----------
 
 class SubjectIn(InputModel):
     name: str = Field(min_length=2, max_length=150)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
     status: StatusField = "draft"
-    sort_order: int = 0
+    sort_order: int = 1
+
+    @field_validator("sort_order", mode="before")
+    @classmethod
+    def check_sort_order(cls, value):
+        return check_display_order(value)
 
 
 class SubjectAdminOut(AdminRecordOut):
@@ -24,9 +29,14 @@ class SubjectAdminOut(AdminRecordOut):
 
 class TopicIn(InputModel):
     title: str = Field(min_length=2, max_length=200)
-    explanation: str | None = None
+    explanation: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
     status: StatusField = "draft"
-    sort_order: int = 0
+    sort_order: int = 1
+
+    @field_validator("sort_order", mode="before")
+    @classmethod
+    def check_sort_order(cls, value):
+        return check_display_order(value)
 
 
 class TopicOut(OutputModel):
@@ -44,7 +54,12 @@ class ResourceIn(InputModel):
     resource_type: str = "link"
     description: str | None = Field(default=None, max_length=300)
     topic_id: int | None = None
-    sort_order: int = 0
+    sort_order: int = 1
+
+    @field_validator("sort_order", mode="before")
+    @classmethod
+    def check_sort_order(cls, value):
+        return check_display_order(value)
 
     @field_validator("url")
     @classmethod

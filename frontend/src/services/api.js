@@ -35,8 +35,49 @@ function humanizeField(name) {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
+// Plain-language versions of the API's built-in validation messages
+function friendlyMessage(error) {
+  const ctx = error.ctx || {}
+  switch (error.type) {
+    case 'missing':
+      return 'This field is required.'
+    case 'string_too_short':
+      return ctx.min_length > 1 ? `Enter at least ${ctx.min_length} characters.` : 'This field is required.'
+    case 'string_too_long':
+      return `The entered value exceeds the maximum length of ${ctx.max_length} characters.`
+    case 'too_long':
+      return `Too many items (at most ${ctx.max_length}).`
+    case 'int_parsing':
+    case 'int_from_float':
+    case 'int_type':
+      return 'Enter a whole number.'
+    case 'float_parsing':
+    case 'float_type':
+      return 'Enter a number.'
+    case 'greater_than_equal':
+      return `Enter a value of at least ${ctx.ge}.`
+    case 'greater_than':
+      return `Enter a value greater than ${ctx.gt}.`
+    case 'less_than_equal':
+      return `Enter a value of at most ${ctx.le}.`
+    case 'less_than':
+      return `Enter a value less than ${ctx.lt}.`
+    case 'string_pattern_mismatch':
+      return 'The entered value is not in the expected format.'
+    case 'literal_error':
+    case 'enum':
+      return 'Select one of the available options.'
+    case 'value_error':
+      return (error.msg || '').replace(/^Value error, /, '')
+    case 'json_invalid':
+      return 'The request could not be read. Please try again.'
+    default:
+      return (error.msg || 'Invalid value').replace(/^Value error, /, '')
+  }
+}
+
 function formatValidationError(error) {
-  const message = (error.msg || 'Invalid value').replace(/^Value error, /, '')
+  const message = friendlyMessage(error)
   const field = (error.loc || []).filter((part) => part !== 'body' && typeof part === 'string').pop()
   return field ? `${humanizeField(field)}: ${message}` : message
 }
@@ -46,6 +87,7 @@ export function errorMessage(data, status) {
   if (typeof detail === 'string') return detail
   if (Array.isArray(detail)) return detail.map(formatValidationError).join(' ')
   if (detail?.message) return detail.message
+  if (status === 413) return 'The submitted data is too large. Please shorten the text and try again.'
   if (status === 429) return 'Too many attempts. Please wait a moment and try again.'
   if (status >= 500) return 'The server ran into a problem. Please try again.'
   return 'Something went wrong. Please try again.'

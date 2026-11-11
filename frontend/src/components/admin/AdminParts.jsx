@@ -1,6 +1,7 @@
 /** Small building blocks shared by the admin and staff content pages. */
 import { useId } from 'react'
 import { useModuleAccess } from '../../hooks/useModuleAccess'
+import { DISPLAY_ORDER_MAX, DISPLAY_ORDER_MIN, displayOrderError } from '../../utils/validation'
 import Dialog from '../ui/Dialog'
 import { Alert } from '../ui/Feedback'
 import FormField from '../ui/FormField'
@@ -69,7 +70,8 @@ export function EditorDialog({ open, title, onClose, onSubmit, saving, error, re
         id={formId}
         onSubmit={(event) => {
           event.preventDefault()
-          onSubmit()
+          // Pressing Enter while a save is running must not send it twice
+          if (!saving && !readOnly) onSubmit()
         }}
         noValidate
       >
@@ -98,6 +100,25 @@ export function StatusField({ value, onChange }) {
       <option value="draft">Draft (hidden from students)</option>
       <option value="published">Published</option>
     </FormField>
+  )
+}
+
+/** The "Display order" input used by every content form: a whole number from 1 to 100. */
+export function DisplayOrderField({ value, onChange }) {
+  return (
+    <FormField
+      label="Display order"
+      type="number"
+      inputMode="numeric"
+      min={DISPLAY_ORDER_MIN}
+      max={DISPLAY_ORDER_MAX}
+      step="1"
+      required
+      value={value}
+      onChange={onChange}
+      hint={`Whole number from ${DISPLAY_ORDER_MIN} to ${DISPLAY_ORDER_MAX}. Lower numbers are listed first.`}
+      error={displayOrderError(value)}
+    />
   )
 }
 
@@ -141,11 +162,12 @@ export function StepsEditor({ value, onChange }) {
             </div>
           </div>
           <div className="form-stack" style={{ gap: 10 }}>
-            <FormField label="Step title" value={step.title} onChange={(event) => update(index, 'title', event.target.value)} />
+            <FormField label="Step title" maxLength={150} value={step.title} onChange={(event) => update(index, 'title', event.target.value)} />
             <FormField
               label="Description"
               as="textarea"
               rows={2}
+              maxLength={2000}
               value={step.description}
               onChange={(event) => update(index, 'description', event.target.value)}
             />

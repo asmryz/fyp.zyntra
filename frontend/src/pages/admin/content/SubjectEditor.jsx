@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { EditorDialog, ModuleGuard, StatusField } from '../../../components/admin/AdminParts'
+import { DisplayOrderField, EditorDialog, ModuleGuard, StatusField } from '../../../components/admin/AdminParts'
 import { PageHeader } from '../../../components/layout/DashboardLayout'
 import ResourceList from '../../../components/ResourceList'
+import { safeExternalUrl } from '../../../utils/limits'
 import { Alert, EmptyState, PageLoader, StatusBadge } from '../../../components/ui/Feedback'
 import FormField from '../../../components/ui/FormField'
 import Icon from '../../../components/ui/Icon'
@@ -14,9 +15,10 @@ import { useConsoleBase } from '../../../hooks/useModuleAccess'
 import { usePageTitle } from '../../../hooks/usePageTitle'
 import { api } from '../../../services/api'
 import { SubjectFields } from './TestPrepManager'
+import { displayOrderError } from '../../../utils/validation'
 
-const EMPTY_TOPIC = { title: '', explanation: '', status: 'draft', sort_order: 0 }
-const EMPTY_RESOURCE = { title: '', url: '', resource_type: 'video', description: '', topic_id: '', sort_order: 0 }
+const EMPTY_TOPIC = { title: '', explanation: '', status: 'draft', sort_order: 1 }
+const EMPTY_RESOURCE = { title: '', url: '', resource_type: 'video', description: '', topic_id: '', sort_order: 1 }
 
 export default function SubjectEditor() {
   return (
@@ -63,7 +65,12 @@ function SubjectEditorContent() {
     setSaving(true)
     setError(null)
     const { kind, id, form } = editor
-    const sortOrder = Number(form.sort_order) || 0
+    if (displayOrderError(form.sort_order)) {
+      setError('Please correct the highlighted field.')
+      setSaving(false)
+      return
+    }
+    const sortOrder = Number(form.sort_order)
     try {
       if (kind === 'subject') {
         await api.put(`/api/admin/test-prep/subjects/${data.id}`, { ...form, sort_order: sortOrder })
@@ -194,7 +201,7 @@ function SubjectEditorContent() {
             {data.resources.map((resource) => (
               <li key={resource.id} className="record-row">
                 <div className="record-main">
-                  <a href={resource.url} target="_blank" rel="noopener noreferrer" className="record-title">
+                  <a href={safeExternalUrl(resource.url) || undefined} target="_blank" rel="noopener noreferrer" className="record-title">
                     {resource.title}
                   </a>
                   <div className="record-meta">
@@ -246,7 +253,7 @@ function SubjectEditorContent() {
               hint="Leave a blank line between paragraphs."
             />
             <StatusField value={editor.form.status} onChange={(status) => setForm({ ...editor.form, status })} />
-            <FormField label="Display order" type="number" value={editor.form.sort_order} onChange={set('sort_order')} />
+            <DisplayOrderField value={editor.form.sort_order} onChange={set('sort_order')} />
           </div>
         )}
         {editor?.kind === 'resource' && (
@@ -276,7 +283,7 @@ function SubjectEditorContent() {
               ))}
             </FormField>
             <FormField label="Short description" optional maxLength={300} value={editor.form.description} onChange={set('description')} className="span-2" />
-            <FormField label="Display order" type="number" value={editor.form.sort_order} onChange={set('sort_order')} />
+            <DisplayOrderField value={editor.form.sort_order} onChange={set('sort_order')} />
           </div>
         )}
       </EditorDialog>

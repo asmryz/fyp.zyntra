@@ -1,4 +1,5 @@
 import Icon from './ui/Icon'
+import { safeExternalUrl } from '../utils/limits'
 
 // Resource types match backend RESOURCE_TYPES (and the ck_learning_resources_type constraint)
 const TYPE_ICONS = { video: 'play', article: 'file', pdf: 'clipboard', link: 'link' }
@@ -13,7 +14,7 @@ export default function ResourceList({ resources }) {
         <li key={resource.id} className="resource-item">
           <Icon name={TYPE_ICONS[resource.resource_type] || 'link'} size={20} />
           <div>
-            <a href={resource.url} target="_blank" rel="noopener noreferrer">
+            <a href={safeExternalUrl(resource.url) || undefined} target="_blank" rel="noopener noreferrer">
               {resource.title}
               <span className="sr-only"> (opens in a new tab)</span>
             </a>

@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { EditorDialog, PermissionTags } from '../../components/admin/AdminParts'
 import { PageHeader } from '../../components/layout/DashboardLayout'
 import { Alert, PageLoader } from '../../components/ui/Feedback'
+import { LIMITS } from '../../utils/limits'
+import { validateFullName } from '../../utils/validation'
 import FormField from '../../components/ui/FormField'
 import Icon from '../../components/ui/Icon'
 import { useToast } from '../../context/ToastContext'
@@ -78,6 +80,11 @@ export default function UserDetailPage() {
   }
 
   async function saveName() {
+    const nameError = validateFullName(nameForm)
+    if (nameError) {
+      setFormError(nameError)
+      return
+    }
     setSaving(true)
     setFormError(null)
     try {
@@ -188,7 +195,7 @@ export default function UserDetailPage() {
                 Module permissions
               </h2>
               <Link to="/root/staff" className="btn btn-ghost btn-sm">
-                Manage permissions
+                Edit permissions
               </Link>
             </div>
             <PermissionTags permissions={user.permissions} modules={options?.content_modules} levels={options?.access_levels} />
@@ -224,7 +231,7 @@ export default function UserDetailPage() {
         saving={saving}
         error={formError}
       >
-        <FormField label="Full name" value={nameForm || ''} onChange={(event) => setNameForm(event.target.value)} />
+        <FormField label="Full name" maxLength={LIMITS.fullName} value={nameForm || ''} onChange={(event) => setNameForm(event.target.value)} />
       </EditorDialog>
       {confirmDialog}
     </>

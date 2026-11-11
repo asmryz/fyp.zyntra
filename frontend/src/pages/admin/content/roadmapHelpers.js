@@ -4,8 +4,6 @@ import { useModuleAccess } from '../../../hooks/useModuleAccess'
 export function roadmapToForm(roadmap) {
   return {
     title: roadmap.title,
-    category: roadmap.category || '',
-    summary: roadmap.summary || '',
     description: roadmap.description || '',
     program_id: roadmap.program_id ? String(roadmap.program_id) : '',
     status: roadmap.status,

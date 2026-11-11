@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.constants import QUALIFICATIONS
+from app.constants import MARKS_MAX, QUALIFICATIONS
 from app.schemas.auth import clean_full_name
 from app.schemas.content import InputModel, OutputModel
 
@@ -13,12 +13,20 @@ class ProfileIn(InputModel):
     previous_qualification: str | None = None
     academic_background: str | None = Field(default=None, max_length=120)
     board_or_university: str | None = Field(default=None, max_length=150)
-    passing_year: int | None = Field(default=None, ge=1970, le=datetime.now().year + 1)
-    obtained_marks: int | None = Field(default=None, ge=0)
-    total_marks: int | None = Field(default=None, gt=0)
+    passing_year: int | None = Field(default=None, ge=1970)
+    obtained_marks: int | None = Field(default=None, ge=0, le=MARKS_MAX)
+    total_marks: int | None = Field(default=None, gt=0, le=MARKS_MAX)
     percentage: float | None = Field(default=None, ge=0, le=100)
     preferred_program_id: int | None = None
     additional_details: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("passing_year")
+    @classmethod
+    def check_passing_year(cls, value):
+        # Checked per request, so the limit follows the calendar (it was fixed when the server started)
+        if value is not None and value > datetime.now().year + 1:
+            raise ValueError(f"Passing year cannot be later than {datetime.now().year + 1}.")
+        return value
 
     @field_validator("full_name")
     @classmethod
@@ -46,6 +54,8 @@ class ProfileIn(InputModel):
 
     @model_validator(mode="after")
     def check_marks(self):
+        if (self.obtained_marks is None) != (self.total_marks is None):
+            raise ValueError("Enter both obtained and total marks, or leave both empty.")
         if self.obtained_marks is not None and self.total_marks is not None:
             if self.obtained_marks > self.total_marks:
                 raise ValueError("Obtained marks cannot be greater than total marks.")

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AccessNote, EditorDialog, ModuleGuard, StatusField, StepsEditor } from '../../../components/admin/AdminParts'
+import { AccessNote, DisplayOrderField, EditorDialog, ModuleGuard, StatusField, StepsEditor } from '../../../components/admin/AdminParts'
 import { PageHeader } from '../../../components/layout/DashboardLayout'
 import ScholarshipInfographic from '../../../components/scholarship/ScholarshipInfographic'
 import Dialog from '../../../components/ui/Dialog'
@@ -14,10 +14,11 @@ import { useModuleAccess } from '../../../hooks/useModuleAccess'
 import { usePageTitle } from '../../../hooks/usePageTitle'
 import { api } from '../../../services/api'
 import { formatDate } from '../../../utils/format'
+import { displayOrderError } from '../../../utils/validation'
 
 const EMPTY_SCHOLARSHIP = {
   title: '', scholarship_type: '', summary: '', description: '', eligibility_criteria: [], benefits: [],
-  required_documents: [], application_steps: [], conditions: [], status: 'draft', sort_order: 0,
+  required_documents: [], application_steps: [], conditions: [], status: 'draft', sort_order: 1,
 }
 
 function toForm(record) {
@@ -31,7 +32,7 @@ function toForm(record) {
 function toBody(form) {
   return {
     ...form,
-    sort_order: Number(form.sort_order) || 0,
+    sort_order: Number(form.sort_order),
     // Drop empty steps the editor may have left behind
     application_steps: form.application_steps.filter((step) => step.title.trim() || step.description.trim()),
   }
@@ -48,6 +49,7 @@ function ScholarshipFields({ form, setForm }) {
         <FormField
           label="Scholarship type"
           optional
+          maxLength={80}
           value={form.scholarship_type}
           onChange={set('scholarship_type')}
           placeholder="e.g. Merit-based, Need-based"
@@ -55,7 +57,7 @@ function ScholarshipFields({ form, setForm }) {
         <StatusField value={form.status} onChange={(status) => setForm({ ...form, status })} />
         <FormField label="Short summary" optional className="span-2" maxLength={300} value={form.summary} onChange={set('summary')} />
         <FormField label="Description" optional as="textarea" className="span-2" value={form.description} onChange={set('description')} />
-        <FormField label="Display order" type="number" value={form.sort_order} onChange={set('sort_order')} />
+        <DisplayOrderField value={form.sort_order} onChange={set('sort_order')} />
       </div>
       <div className="form-section form-stack">
         <ListEditor label="Eligibility criteria" value={form.eligibility_criteria} onChange={setList('eligibility_criteria')} addLabel="Add criterion" />
@@ -93,6 +95,10 @@ function ScholarshipsManagerContent() {
   }
 
   async function save() {
+    if (displayOrderError(editor.form.sort_order)) {
+      setError('Please correct the highlighted field.')
+      return
+    }
     setSaving(true)
     setError(null)
     try {

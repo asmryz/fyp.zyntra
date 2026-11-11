@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AccessNote, EditorDialog, ModuleGuard, StatusField } from '../../../components/admin/AdminParts'
+import { AccessNote, DisplayOrderField, EditorDialog, ModuleGuard, StatusField } from '../../../components/admin/AdminParts'
 import { PageHeader } from '../../../components/layout/DashboardLayout'
 import { Alert, EmptyState, SkeletonList, StatusBadge } from '../../../components/ui/Feedback'
 import FormField from '../../../components/ui/FormField'
@@ -12,11 +12,15 @@ import { useModuleAccess } from '../../../hooks/useModuleAccess'
 import { usePageTitle } from '../../../hooks/usePageTitle'
 import { api } from '../../../services/api'
 import { formatDate } from '../../../utils/format'
+import { DISPLAY_ORDER_MAX, displayOrderError } from '../../../utils/validation'
 
 const EMPTY_PROGRAM = {
   name: '', department: '', degree_level: '', duration: '', summary: '', description: '', admission_requirements: '',
-  min_percentage: '', accepted_qualifications: [], eligibility_notes: '', status: 'draft', sort_order: 0,
+  min_percentage: '', accepted_qualifications: [], eligibility_notes: '', status: 'draft', sort_order: 1,
 }
+
+// Optional text fields: an empty input is saved as "no value" (null), not as an empty string
+const OPTIONAL_TEXT = ['department', 'degree_level', 'duration', 'summary', 'description', 'admission_requirements', 'eligibility_notes']
 
 function toForm(program) {
   const form = { ...EMPTY_PROGRAM }
@@ -24,18 +28,24 @@ function toForm(program) {
     if (program[key] !== null && program[key] !== undefined) form[key] = program[key]
   }
   form.min_percentage = program.min_percentage ?? ''
+  form.accepted_qualifications = Array.isArray(program.accepted_qualifications) ? [...program.accepted_qualifications] : []
+  form.sort_order = program.sort_order === null || program.sort_order === undefined ? '' : String(program.sort_order)
   return form
 }
 
 function toBody(form) {
-  return {
+  const body = {
     ...form,
     min_percentage: form.min_percentage === '' ? null : Number(form.min_percentage),
-    sort_order: Number(form.sort_order) || 0,
+    sort_order: Number(form.sort_order),
   }
+  for (const key of OPTIONAL_TEXT) {
+    if (typeof body[key] === 'string' && body[key].trim() === '') body[key] = null
+  }
+  return body
 }
 
-function ProgramFields({ form, setForm, qualifications }) {
+function ProgramFields({ form, setForm, qualifications, savedQualifications }) {
   const set = (field) => (event) => setForm({ ...form, [field]: event.target.value })
   const toggleQualification = (item) => {
     const list = form.accepted_qualifications
@@ -48,16 +58,17 @@ function ProgramFields({ form, setForm, qualifications }) {
   return (
     <>
       <div className="form-grid">
-        <FormField label="Program name" value={form.name} onChange={set('name')} className="span-2" />
-        <FormField label="Department" optional value={form.department} onChange={set('department')} />
+        <FormField label="Program name" maxLength={150} value={form.name} onChange={set('name')} className="span-2" />
+        <FormField label="Department" optional maxLength={120} value={form.department} onChange={set('department')} />
         <FormField
           label="Degree level"
           optional
+          maxLength={40}
           value={form.degree_level}
           onChange={set('degree_level')}
           placeholder="e.g. Undergraduate"
         />
-        <FormField label="Duration" optional value={form.duration} onChange={set('duration')} />
+        <FormField label="Duration" optional maxLength={60} value={form.duration} onChange={set('duration')} />
         <StatusField value={form.status} onChange={(status) => setForm({ ...form, status })} />
         <FormField
           label="Short summary"
@@ -84,7 +95,8 @@ function ProgramFields({ form, setForm, qualifications }) {
         <p className="field-hint" style={{ marginBottom: 12 }}>
           Used to compare student profiles. Leave empty until the official criteria are confirmed.
         </p>
-        <div className="form-grid">
+        {/* Top-aligned so the display order hint and error do not stretch the input beside it */}
+        <div className="form-grid" style={{ alignItems: 'start' }}>
           <FormField
             label="Minimum marks (%)"
             optional
@@ -95,11 +107,12 @@ function ProgramFields({ form, setForm, qualifications }) {
             value={form.min_percentage}
             onChange={set('min_percentage')}
           />
-          <FormField label="Display order" type="number" value={form.sort_order} onChange={set('sort_order')} />
+          <DisplayOrderField value={form.sort_order} onChange={set('sort_order')} />
         </div>
         <fieldset className="list-editor" style={{ marginTop: 16 }}>
           <legend className="field-label">Accepted qualifications</legend>
-          {qualifications.map((item) => (
+          {/* The standard list, plus any other values this program already stores */}
+          {[...qualifications, ...savedQualifications.filter((item) => !qualifications.includes(item))].map((item) => (
             <label key={item} className="checkbox-row">
               <input
                 type="checkbox"
@@ -145,10 +158,17 @@ function ProgramsManagerContent() {
 
   const openEditor = (record) => {
     setError(null)
-    setEditor({ record, form: record ? toForm(record) : { ...EMPTY_PROGRAM }, readOnly: record ? !record.can_edit : false })
+    // New programs go to the end of the list by default
+    const last = Math.max(0, ...(programs.data || []).map((program) => program.sort_order || 0))
+    const form = record ? toForm(record) : { ...EMPTY_PROGRAM, sort_order: String(Math.min(DISPLAY_ORDER_MAX, last + 1)) }
+    setEditor({ record, form, readOnly: record ? !record.can_edit : false })
   }
 
   async function save() {
+    if (displayOrderError(editor.form.sort_order)) {
+      setError('Please correct the highlighted field.')
+      return
+    }
     setSaving(true)
     setError(null)
     try {
@@ -251,6 +271,7 @@ function ProgramsManagerContent() {
             form={editor.form}
             setForm={(form) => setEditor({ ...editor, form })}
             qualifications={options?.qualifications || []}
+            savedQualifications={editor.record?.accepted_qualifications || []}
           />
         )}
       </EditorDialog>

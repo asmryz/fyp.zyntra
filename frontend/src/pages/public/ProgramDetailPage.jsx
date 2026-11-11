@@ -4,6 +4,7 @@ import Icon from '../../components/ui/Icon'
 import { useAuth } from '../../context/AuthContext'
 import { useApi } from '../../hooks/useApi'
 import { usePageTitle } from '../../hooks/usePageTitle'
+import { roadmapPathForRole } from '../../utils/roles'
 
 export default function ProgramDetailPage() {
   const { slug } = useParams()
@@ -71,20 +72,24 @@ export default function ProgramDetailPage() {
                 <RichText text={program.admission_requirements} />
               </div>
             )}
-            {program.roadmaps.length > 0 && (
-              <div className="content-section">
-                <h2>Roadmaps for this program</h2>
+            {/* Every program ends with its own roadmap link (logged-out visitors are sent to login first) */}
+            <div className="content-section">
+              <h2>Roadmap for this program</h2>
+              {program.roadmaps.length > 0 ? (
                 <ul className="footer-links">
                   {program.roadmaps.map((roadmap) => (
                     <li key={roadmap.id}>
-                      <Link to={`/student/roadmaps/${roadmap.id}`} className="text-link">
-                        {roadmap.title}
+                      <span>{roadmap.title}</span>{' '}
+                      <Link to={roadmapPathForRole(user?.role, roadmap.id)} className="text-link">
+                        Open in your dashboard <Icon name="arrow-right" size={16} />
                       </Link>
                     </li>
                   ))}
                 </ul>
-              </div>
-            )}
+              ) : (
+                <p className="field-hint">A roadmap for this program is not available yet.</p>
+              )}
+            </div>
           </div>
 
           <aside className="side-panel" aria-labelledby="criteria-title">

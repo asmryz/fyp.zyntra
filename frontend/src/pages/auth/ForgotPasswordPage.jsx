@@ -181,7 +181,7 @@ export default function ForgotPasswordPage() {
             />
             <p className="auth-note">
               <Icon name="info" size={16} />
-              <span>The code expires 15 minutes after it is sent. Check your spam folder if it has not arrived.</span>
+              <span>The code expires 10 minutes after it is sent. Check your spam folder if it has not arrived.</span>
             </p>
             <AuthSubmit busy={submitting} busyLabel="Checking...">
               Continue

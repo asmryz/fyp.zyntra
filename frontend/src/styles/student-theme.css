@@ -580,17 +580,6 @@
   color: var(--black);
 }
 
-.theme-student .program-card-category {
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: var(--coral);
-  color: var(--black);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .theme-student .program-card-body {
   display: grid;
   gap: 6px;
@@ -610,13 +599,6 @@
   font-size: 0.88rem;
   font-weight: 700;
   color: var(--paper);
-}
-
-.theme-student .program-card-summary {
-  margin-top: 4px;
-  font-size: 0.92rem;
-  line-height: 1.55;
-  color: #d9d9d2;
 }
 
 .theme-student .program-card-meta {

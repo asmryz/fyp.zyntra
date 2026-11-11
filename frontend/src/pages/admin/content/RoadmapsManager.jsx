@@ -14,7 +14,7 @@ import { api } from '../../../services/api'
 import { formatDate } from '../../../utils/format'
 import { roadmapToBody, useProgramChoices } from './roadmapHelpers'
 
-const EMPTY_ROADMAP = { title: '', category: '', summary: '', description: '', program_id: '', status: 'draft' }
+const EMPTY_ROADMAP = { title: '', description: '', program_id: '', status: 'draft' }
 
 export function RoadmapFields({ form, setForm, programs }) {
   const set = (field) => (event) => setForm({ ...form, [field]: event.target.value })
@@ -28,13 +28,6 @@ export function RoadmapFields({ form, setForm, programs }) {
         placeholder="e.g. Computer Science"
         hint="Shown at the top of the roadmap, with the branches below it."
       />
-      <FormField
-        label="Category"
-        optional
-        value={form.category}
-        onChange={set('category')}
-        placeholder="e.g. Program roadmap, Career roadmap"
-      />
       <FormField label="Linked program" optional as="select" value={form.program_id} onChange={set('program_id')}>
         <option value="">Not linked to a program</option>
         {programs.map((program) => (
@@ -43,7 +36,6 @@ export function RoadmapFields({ form, setForm, programs }) {
           </option>
         ))}
       </FormField>
-      <FormField label="Short summary" optional className="span-2" maxLength={300} value={form.summary} onChange={set('summary')} />
       <FormField label="Description" optional as="textarea" className="span-2" value={form.description} onChange={set('description')} />
       <StatusField value={form.status} onChange={(status) => setForm({ ...form, status })} />
     </div>
@@ -75,7 +67,7 @@ function RoadmapsManagerContent() {
     setError(null)
     try {
       await api.post('/api/admin/roadmaps', roadmapToBody(form))
-      toast.success('Roadmap created. Open it to add branches and steps.')
+      toast.success('Roadmap created. Select Edit to add branches and steps.')
       setForm(null)
       roadmaps.reload()
     } catch (err) {
@@ -140,7 +132,6 @@ function RoadmapsManagerContent() {
                   </Link>
                   <div className="record-meta">
                     <StatusBadge status={roadmap.status} />
-                    {roadmap.category && <span>{roadmap.category}</span>}
                     {roadmap.program_name && <span>{roadmap.program_name}</span>}
                     <span>{roadmap.branch_count} branches</span>
                     <span>{roadmap.node_count} steps</span>
@@ -149,7 +140,7 @@ function RoadmapsManagerContent() {
                 </div>
                 <div className="record-actions">
                   <Link to={`${base}/roadmaps/${roadmap.id}`} className="btn btn-secondary btn-sm">
-                    <Icon name={roadmap.can_edit ? 'edit' : 'file'} size={16} /> {roadmap.can_edit ? 'Open editor' : 'View'}
+                    <Icon name={roadmap.can_edit ? 'edit' : 'file'} size={16} /> {roadmap.can_edit ? 'Edit' : 'View'}
                   </Link>
                   {roadmap.can_edit && (
                     <button type="button" className="btn btn-danger btn-sm" onClick={() => remove(roadmap)}>

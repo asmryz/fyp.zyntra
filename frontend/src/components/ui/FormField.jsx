@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { LIMITS } from '../../utils/limits'
 
 /**
  * A labelled form control with optional hint and error text.
@@ -26,10 +27,15 @@ export default function FormField({
   const errorId = error ? `${id}-error` : undefined
   const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined
 
+  // Every free-text control gets a length limit unless the caller sets a tighter one
+  const textInput = as === 'input' && ['text', 'url', 'search', undefined].includes(controlProps.type)
+  const defaultMax = as === 'textarea' ? LIMITS.longText : textInput ? (controlProps.type === 'url' ? LIMITS.url : LIMITS.shortText) : undefined
+
   const sharedProps = {
     id,
     'aria-invalid': error ? 'true' : undefined,
     'aria-describedby': describedBy,
+    maxLength: defaultMax,
     ...controlProps,
   }
 

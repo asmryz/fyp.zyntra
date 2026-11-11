@@ -22,6 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.config import settings
 from app.core.dependencies import get_current_student
+from app.core.rate_limit import assistant_limiter
 from app.models import User
 from app.schemas.student import AssistantAnswer, AssistantQuestion
 from app.services.student_service import build_profile_out
@@ -45,6 +46,9 @@ def assistant_status(user: User = Depends(get_current_student)):
 
 @router.post("/assistant/ask", response_model=AssistantAnswer)
 def ask_assistant(data: AssistantQuestion, user: User = Depends(get_current_student)):
+    # Each question can keep the AI service busy for up to two minutes, so limit questions per student
+    assistant_limiter.check(f"assistant:{user.id}")
+    assistant_limiter.record(f"assistant:{user.id}")
     if not settings.ai_service_url:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=NOT_CONNECTED_MESSAGE)
 

@@ -131,7 +131,7 @@ export default function VerifyEmailPage() {
         />
         <p className="auth-note">
           <Icon name="info" size={16} />
-          <span>Codes expire 15 minutes after they are sent. Each code allows 5 attempts.</span>
+          <span>Codes expire 10 minutes after they are sent. Each code allows 5 attempts.</span>
         </p>
 
         <AuthSubmit busy={submitting} busyLabel="Verifying...">

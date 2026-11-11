@@ -3,11 +3,13 @@ Admin CRUD for programs and scholarships, and editing of general website
 content (website content blocks can only be viewed and edited, not added or
 deleted). Each endpoint checks the user's module permission through `module_access`.
 """
-from fastapi import APIRouter, Depends
+import re
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database import get_db
-from app.constants import SITE_CONTENT_KEYS
+from app.constants import PHONE_PATTERN, QUALIFICATIONS, SITE_CONTENT_KEYS
 from app.core.permissions import ModuleAccess, ensure_can_edit, ensure_can_view, module_access, visible_records
 from app.models import Program, Scholarship, SiteContent
 from app.schemas.auth import MessageResponse
@@ -20,6 +22,22 @@ router = APIRouter(prefix="/api/admin", tags=["Admin: content"])
 
 
 # ---------- Programs ----------
+
+def check_program_qualifications(values: list[str], current: list[str] | None = None):
+    """
+    Accepted qualifications must come from the standard list. When a program is
+    edited, values it already stores are also kept, so programs whose
+    qualifications were entered outside the dashboard (e.g. directly in the
+    database) can still be saved without losing that data.
+    """
+    allowed = set(QUALIFICATIONS) | set(current or [])
+    unknown = [value for value in values if value not in allowed]
+    if unknown:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Unknown accepted qualification: {', '.join(unknown)}",
+        )
+
 
 @router.get("/programs", response_model=list[ProgramAdminOut])
 def list_programs(access: ModuleAccess = Depends(module_access("programs")), db: Session = Depends(get_db)):
@@ -40,6 +58,7 @@ def create_program(
     access: ModuleAccess = Depends(module_access("programs", need_write=True)),
     db: Session = Depends(get_db),
 ):
+    check_program_qualifications(data.accepted_qualifications)
     program = Program(**data.model_dump(), slug=unique_slug(db, Program, data.name))
     program.created_by_id = access.user.id
     program.updated_by_id = access.user.id
@@ -59,6 +78,7 @@ def update_program(
 ):
     program = db.get(Program, program_id)
     ensure_can_edit(access, program)
+    check_program_qualifications(data.accepted_qualifications, program.accepted_qualifications)
     if data.name != program.name:
         program.slug = unique_slug(db, Program, data.name, exclude_id=program.id)
     apply_changes(program, data.model_dump())
@@ -171,6 +191,12 @@ def update_site_content(
 ):
     record = db.get(SiteContent, content_id)
     ensure_can_edit(access, record)
+    if record.key == "contact_phone" and not re.fullmatch(PHONE_PATTERN, data.body):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Enter the phone number only: 7 to 15 digits, optionally starting with + for the country code "
+                   "(no spaces, dashes or other text).",
+        )
     # The key (which website section the block belongs to) is fixed
     apply_changes(record, data.model_dump())
     record.updated_by_id = access.user.id

@@ -1,5 +1,6 @@
 import { RichText } from '../ui/Feedback'
 import Icon from '../ui/Icon'
+import { safeExternalUrl } from '../../utils/limits'
 
 /** One block of a step's details. The section types come from the backend (ROADMAP_SECTION_TYPES). */
 function DetailSection({ section, headingId }) {
@@ -36,7 +37,7 @@ function DetailSection({ section, headingId }) {
         <ul className="rm-detail-links">
           {links.map((link, index) => (
             <li key={index}>
-              <a href={link.url} target="_blank" rel="noopener noreferrer">
+              <a href={safeExternalUrl(link.url) || undefined} target="_blank" rel="noopener noreferrer">
                 <Icon name="external" size={15} />
                 {link.label}
                 <span className="sr-only"> (opens in a new tab)</span>

@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, field_validator, model_validator
+import unicodedata
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 
 def validate_password_strength(password: str) -> str:
@@ -13,18 +15,32 @@ def validate_password_strength(password: str) -> str:
     return password
 
 
+NAME_PUNCTUATION = " .'-"
+
+
 def clean_full_name(value: str) -> str:
+    """
+    A person's name: letters from any language (with their accents), spaces,
+    full stops, apostrophes and hyphens. Digits, symbols and markup are refused.
+    """
     value = " ".join(value.split())
     if len(value) < 2:
         raise ValueError("Please enter your full name.")
     if len(value) > 120:
         raise ValueError("Name must be at most 120 characters long.")
+    allowed = all(ch.isalpha() or unicodedata.category(ch).startswith("M") or ch in NAME_PUNCTUATION for ch in value)
+    if not allowed or not any(ch.isalpha() for ch in value):
+        raise ValueError("Name can only contain letters, spaces, full stops, apostrophes and hyphens.")
     return value
 
 
+# One-time codes are always 6 digits (surrounding spaces are ignored)
+CODE_PATTERN = r"^\s*\d{6}\s*$"
+
+
 class NewPasswordMixin(BaseModel):
-    password: str
-    confirm_password: str
+    password: str = Field(max_length=128)
+    confirm_password: str = Field(max_length=128)
 
     @field_validator("password")
     @classmethod
@@ -54,25 +70,26 @@ class EmailRequest(BaseModel):
 
 class VerifyEmailRequest(BaseModel):
     email: EmailStr
-    code: str
+    code: str = Field(pattern=CODE_PATTERN, max_length=20)
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    # Longer than any password the system accepts, but stops huge payloads reaching bcrypt
+    password: str = Field(min_length=1, max_length=128)
 
 
 class ResetCodeRequest(BaseModel):
     email: EmailStr
-    code: str
+    code: str = Field(pattern=CODE_PATTERN, max_length=20)
 
 
 class ResetPasswordRequest(NewPasswordMixin):
-    reset_token: str
+    reset_token: str = Field(min_length=1, max_length=2000)
 
 
 class AcceptInvitationRequest(NewPasswordMixin):
-    token: str
+    token: str = Field(min_length=1, max_length=200)
 
 
 class MessageResponse(BaseModel):

@@ -4,7 +4,11 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.constants import QUALIFICATIONS, ROADMAP_SECTION_TYPES
+from urllib.parse import urlsplit
+
+from app.constants import (
+    DISPLAY_ORDER_MAX, DISPLAY_ORDER_MIN, LIST_ITEM_MAX, LIST_MAX_ITEMS, LONG_TEXT_MAX, ROADMAP_SECTION_TYPES,
+)
 
 StatusField = Literal["draft", "published"]
 
@@ -19,14 +23,29 @@ class OutputModel(BaseModel):
 
 
 def clean_text_list(items: list[str]) -> list[str]:
-    """Drop blank lines from list fields such as eligibility criteria."""
-    return [item.strip() for item in items if item and item.strip()]
+    """Drop blank lines from list fields such as eligibility criteria, and enforce the list limits."""
+    cleaned = [item.strip() for item in items if item and item.strip()]
+    if len(cleaned) > LIST_MAX_ITEMS:
+        raise ValueError(f"A list can have at most {LIST_MAX_ITEMS} items.")
+    if any(len(item) > LIST_ITEM_MAX for item in cleaned):
+        raise ValueError(f"Each list item can be at most {LIST_ITEM_MAX} characters.")
+    return cleaned
+
+
+def check_display_order(value):
+    """Display order: a real whole number from 1 to 100 (no booleans, decimals or text)."""
+    if isinstance(value, bool) or not isinstance(value, int) or not DISPLAY_ORDER_MIN <= value <= DISPLAY_ORDER_MAX:
+        raise ValueError(f"Display order must be a whole number from {DISPLAY_ORDER_MIN} to {DISPLAY_ORDER_MAX}.")
+    return value
 
 
 def check_url(url: str) -> str:
+    """Only complete http(s) web addresses: a scheme, a host and no spaces or control characters."""
     url = url.strip()
-    if not (url.startswith("http://") or url.startswith("https://")):
-        raise ValueError("Links must start with http:// or https://")
+    parts = urlsplit(url)
+    bad_char = any(ch.isspace() or ord(ch) < 32 for ch in url)
+    if parts.scheme.lower() not in ("http", "https") or not parts.netloc or bad_char:
+        raise ValueError("Enter a complete web address starting with http:// or https://")
     return url
 
 
@@ -50,21 +69,32 @@ class ProgramIn(InputModel):
     degree_level: str | None = Field(default=None, max_length=40)
     duration: str | None = Field(default=None, max_length=60)
     summary: str | None = Field(default=None, max_length=300)
-    description: str | None = None
-    admission_requirements: str | None = None
+    description: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
+    admission_requirements: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
     min_percentage: float | None = Field(default=None, ge=0, le=100)
-    accepted_qualifications: list[str] = []
-    eligibility_notes: str | None = None
+    accepted_qualifications: list[str] = Field(default=[], max_length=LIST_MAX_ITEMS)
+    eligibility_notes: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
     status: StatusField = "draft"
-    sort_order: int = 0
+    # Position in program lists: a whole number from 1 to 100 (also a database CHECK)
+    sort_order: int = 1
 
     @field_validator("accepted_qualifications")
     @classmethod
-    def check_qualifications(cls, values):
-        for value in values:
-            if value not in QUALIFICATIONS:
-                raise ValueError(f"Unknown qualification: {value}")
-        return values
+    def clean_qualifications(cls, values):
+        # Whether each value is allowed depends on the program being edited, so
+        # the router checks it with check_program_qualifications().
+        cleaned = []
+        for value in clean_text_list(values):
+            if len(value) > 200:
+                raise ValueError("Each qualification must be 200 characters or fewer.")
+            if value not in cleaned:
+                cleaned.append(value)
+        return cleaned
+
+    @field_validator("sort_order", mode="before")
+    @classmethod
+    def check_sort_order(cls, value):
+        return check_display_order(value)
 
 
 class ProgramAdminOut(AdminRecordOut):
@@ -85,7 +115,6 @@ class ProgramAdminOut(AdminRecordOut):
 class RoadmapLink(OutputModel):
     id: int
     title: str
-    category: str | None = None
 
 
 class ProgramPublicOut(OutputModel):
@@ -108,26 +137,31 @@ class ProgramPublicOut(OutputModel):
 
 class ApplicationStep(InputModel):
     title: str = Field(min_length=1, max_length=150)
-    description: str = ""
+    description: str = Field(default="", max_length=2000)
 
 
 class ScholarshipIn(InputModel):
     title: str = Field(min_length=2, max_length=200)
     scholarship_type: str | None = Field(default=None, max_length=80)
     summary: str | None = Field(default=None, max_length=300)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
     eligibility_criteria: list[str] = []
     benefits: list[str] = []
     required_documents: list[str] = []
-    application_steps: list[ApplicationStep] = []
+    application_steps: list[ApplicationStep] = Field(default=[], max_length=30)
     conditions: list[str] = []
     status: StatusField = "draft"
-    sort_order: int = 0
+    sort_order: int = 1
 
     @field_validator("eligibility_criteria", "benefits", "required_documents", "conditions")
     @classmethod
     def drop_blank_items(cls, values):
         return clean_text_list(values)
+
+    @field_validator("sort_order", mode="before")
+    @classmethod
+    def check_sort_order(cls, value):
+        return check_display_order(value)
 
 
 class ScholarshipFields(OutputModel):
@@ -170,16 +204,14 @@ class LinkItem(InputModel):
 class RoadmapIn(InputModel):
     # The title is shown as the roadmap's central heading, e.g. "Computer Science"
     title: str = Field(min_length=2, max_length=200)
-    category: str | None = Field(default=None, max_length=80)
-    summary: str | None = Field(default=None, max_length=300)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
     program_id: int | None = None
     status: StatusField = "draft"
 
 
 class RoadmapBranchIn(InputModel):
     name: str = Field(min_length=1, max_length=150)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
     color: str = Field(default="#2563EB", pattern=HEX_COLOR)
 
     @field_validator("color")
@@ -233,7 +265,7 @@ class RoadmapSectionIn(InputModel):
 class RoadmapNodeIn(InputModel):
     """A step and its detail sections. Saving replaces the step's sections with this list, in order."""
     title: str = Field(min_length=1, max_length=150)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
     is_default: bool = False
     sections: list[RoadmapSectionIn] = Field(default=[], max_length=30)
 
@@ -273,8 +305,6 @@ class RoadmapBranchOut(OutputModel):
 
 class RoadmapAdminOut(AdminRecordOut):
     title: str
-    category: str | None
-    summary: str | None
     description: str | None
     program_id: int | None
     program_name: str | None = None
@@ -289,8 +319,6 @@ class RoadmapAdminDetailOut(RoadmapAdminOut):
 class RoadmapPublicOut(OutputModel):
     id: int
     title: str
-    category: str | None
-    summary: str | None
     description: str | None
     program_name: str | None = None
     branch_count: int = 0
@@ -307,7 +335,7 @@ class RoadmapPublicDetailOut(RoadmapPublicOut):
 class SiteContentUpdate(InputModel):
     """Editable fields of a website content block. Its key (website section) cannot be changed."""
     title: str = Field(min_length=1, max_length=200)
-    body: str = ""
+    body: str = Field(default="", max_length=LONG_TEXT_MAX)
     status: StatusField = "draft"
 
 

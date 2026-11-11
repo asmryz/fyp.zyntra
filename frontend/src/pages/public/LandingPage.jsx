@@ -153,7 +153,6 @@ export default function LandingPage() {
       <section id="about" className="section section-deep" aria-labelledby="about-title">
         <div className="container about-grid">
           <div>
-            <p className="eyebrow eyebrow-warm">About SZABIST</p>
             <h2 id="about-title" className="section-title">
               {content.about_szabist?.title || 'About SZABIST'}
             </h2>

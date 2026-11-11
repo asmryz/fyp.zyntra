@@ -30,6 +30,7 @@ function BranchFields({ form, setForm, colors }) {
     <div className="form-grid">
       <FormField
         label="Branch name"
+        maxLength={150}
         value={form.name}
         onChange={set('name')}
         className="span-2"
@@ -105,6 +106,7 @@ function SectionsEditor({ sections, onChange, types }) {
             </span>
             <FormField
               label="Section title"
+              maxLength={100}
               value={section.section_title}
               onChange={(event) => update(index, { section_title: event.target.value })}
               list={listId}
@@ -182,7 +184,7 @@ function StepFields({ form, setForm, types }) {
   return (
     <>
       <div className="form-grid">
-        <FormField label="Step title" value={form.title} onChange={set('title')} className="span-2" />
+        <FormField label="Step title" maxLength={150} value={form.title} onChange={set('title')} className="span-2" />
         <FormField
           label="Description"
           optional
@@ -338,7 +340,6 @@ function RoadmapEditorContent() {
       </Link>
       <PageHeader
         title={data.title}
-        description={data.summary}
         actions={
           canEdit && (
             <>
@@ -354,7 +355,6 @@ function RoadmapEditorContent() {
       />
       <div className="record-meta" style={{ marginBottom: 20 }}>
         <StatusBadge status={data.status} />
-        {data.category && <span>{data.category}</span>}
         {data.program_name && <span>Program: {data.program_name}</span>}
         <span>{data.branches.length} branches</span>
         <span>{stepCount} steps</span>
@@ -415,22 +415,6 @@ function RoadmapEditorContent() {
                   </div>
                   {canEdit && (
                     <div className="record-actions">
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        disabled={moving || branchIndex === 0}
-                        onClick={() => reorder(`/api/admin/roadmaps/${data.id}/branches/order`, data.branches, branchIndex, -1)}
-                      >
-                        <Icon name="arrow-left" size={16} label={`Move ${branch.name} left`} />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        disabled={moving || branchIndex === data.branches.length - 1}
-                        onClick={() => reorder(`/api/admin/roadmaps/${data.id}/branches/order`, data.branches, branchIndex, 1)}
-                      >
-                        <Icon name="arrow-right" size={16} label={`Move ${branch.name} right`} />
-                      </button>
                       <button type="button" className="btn btn-secondary btn-sm" onClick={() => open('branch', branch)}>
                         <Icon name="edit" size={16} /> Edit
                       </button>

@@ -9,6 +9,7 @@ import { useApi } from '../../../hooks/useApi'
 import { usePageTitle } from '../../../hooks/usePageTitle'
 import { api } from '../../../services/api'
 import { formatDate } from '../../../utils/format'
+import { phoneError } from '../../../utils/validation'
 
 /**
  * Website content blocks can only be viewed and edited. Each block belongs to
@@ -39,7 +40,14 @@ function SiteContentManagerContent() {
     })
   }
 
+  // The contact phone block holds a phone number only, not free text
+  const isPhone = editor?.record.key === 'contact_phone'
+
   async function save() {
+    if (isPhone && phoneError(editor.form.body)) {
+      setError('Please correct the highlighted field.')
+      return
+    }
     setSaving(true)
     setError(null)
     try {
@@ -109,14 +117,29 @@ function SiteContentManagerContent() {
               <p className="site-section-name">{editor.record.used_on || `Custom key: ${editor.record.key}`}</p>
             </div>
             <FormField label="Title" value={form.title} onChange={set('title')} />
-            <FormField
-              label="Text"
-              as="textarea"
-              rows={8}
-              value={form.body}
-              onChange={set('body')}
-              hint="Leave a blank line between paragraphs. Do not add unofficial statistics or claims."
-            />
+            {isPhone ? (
+              <FormField
+                label="Phone number"
+                type="tel"
+                inputMode="tel"
+                autoComplete="off"
+                maxLength={16}
+                placeholder="e.g. 03001234567 or +923001234567"
+                value={form.body}
+                onChange={set('body')}
+                hint="Digits only, with an optional + and country code at the start. Leading zeros are kept."
+                error={phoneError(form.body)}
+              />
+            ) : (
+              <FormField
+                label="Text"
+                as="textarea"
+                rows={8}
+                value={form.body}
+                onChange={set('body')}
+                hint="Leave a blank line between paragraphs. Do not add unofficial statistics or claims."
+              />
+            )}
             <StatusField value={form.status} onChange={(status) => setEditor({ ...editor, form: { ...form, status } })} />
           </>
         )}

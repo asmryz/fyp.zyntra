@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from app.core.security import codes_match, generate_numeric_code, hash_code, utcnow
 from app.models import AuthCode, User
 
-CODE_LIFETIME_MINUTES = 15
+CODE_LIFETIME_MINUTES = 10
 MAX_ATTEMPTS = 5
 RESEND_COOLDOWN_SECONDS = 60
 MAX_CODES_PER_HOUR = 5

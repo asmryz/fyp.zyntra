@@ -14,6 +14,8 @@ class Program(TimestampMixin, PublishableMixin, Base):
             "min_percentage IS NULL OR (min_percentage >= 0 AND min_percentage <= 100)",
             name="ck_programs_min_percentage_range",
         ),
+        # Display order: a whole number from 1 to 100 (constants.DISPLAY_ORDER_MIN/MAX)
+        CheckConstraint("sort_order BETWEEN 1 AND 100", name="ck_programs_sort_order_range"),
     )
 
     id = Column(Integer, primary_key=True)
@@ -29,7 +31,7 @@ class Program(TimestampMixin, PublishableMixin, Base):
     min_percentage = Column(Numeric(5, 2))
     accepted_qualifications = Column(JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb"))
     eligibility_notes = Column(Text)
-    sort_order = Column(Integer, nullable=False, default=0, server_default="0")
+    sort_order = Column(Integer, nullable=False, default=1, server_default="1")
 
     roadmaps = relationship("Roadmap", back_populates="program")
 
@@ -41,6 +43,9 @@ class Scholarship(TimestampMixin, PublishableMixin, Base):
     application_steps holds objects: [{"title": "...", "description": "..."}]
     """
     __tablename__ = "scholarships"
+    __table_args__ = (
+        CheckConstraint("sort_order BETWEEN 1 AND 100", name="ck_scholarships_sort_order_range"),
+    )
 
     id = Column(Integer, primary_key=True)
     title = Column(String(200), nullable=False)
@@ -52,7 +57,7 @@ class Scholarship(TimestampMixin, PublishableMixin, Base):
     required_documents = Column(JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb"))
     application_steps = Column(JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb"))
     conditions = Column(JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb"))
-    sort_order = Column(Integer, nullable=False, default=0, server_default="0")
+    sort_order = Column(Integer, nullable=False, default=1, server_default="1")
 
 
 class Roadmap(TimestampMixin, PublishableMixin, Base):
@@ -66,8 +71,6 @@ class Roadmap(TimestampMixin, PublishableMixin, Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String(200), nullable=False)
-    category = Column(String(80))          # e.g. Program roadmap, Career roadmap
-    summary = Column(String(300))
     description = Column(Text)
     program_id = Column(Integer, ForeignKey("programs.id", ondelete="SET NULL"), index=True)
 
@@ -150,6 +153,12 @@ class RoadmapNodeSection(TimestampMixin, Base):
 class SiteContent(TimestampMixin, PublishableMixin, Base):
     """Editable text blocks for the website, looked up by key (see constants.SITE_CONTENT_KEYS)."""
     __tablename__ = "site_content"
+    __table_args__ = (
+        # The contact phone holds the number only (constants.PHONE_PATTERN); empty while not set
+        CheckConstraint(
+            "key <> 'contact_phone' OR body = '' OR body ~ '^[+]?[0-9]{7,15}$'", name="ck_site_content_contact_phone",
+        ),
+    )
 
     id = Column(Integer, primary_key=True)
     key = Column(String(60), nullable=False, unique=True)

@@ -7,7 +7,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from database import get_db
-from app.constants import CONTENT_MODULES, Role, Status
+from app.constants import CONTENT_MODULES, SEARCH_MAX, Role, Status
 from app.core.dependencies import get_current_admin_user, get_current_root_admin
 from app.core.permissions import get_user_permissions
 from app.models import (
@@ -92,20 +92,26 @@ def overview(user: User = Depends(get_current_admin_user), db: Session = Depends
 
 # ---------- Users ----------
 
+def like_pattern(text: str) -> str:
+    """A 'contains' pattern in which %, _ and \\ typed by the user match literally."""
+    escaped = text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{escaped}%"
+
+
 @router.get("/users", response_model=UserListOut)
 def list_users(
-    search: str = "",
-    role: str = "",
-    status_filter: str = Query("", alias="status"),
-    page: int = Query(1, ge=1),
+    search: str = Query("", max_length=SEARCH_MAX),
+    role: str = Query("", max_length=20),
+    status_filter: str = Query("", alias="status", max_length=20),
+    page: int = Query(1, ge=1, le=100_000),
     page_size: int = Query(20, ge=1, le=100),
     root: User = Depends(get_current_root_admin),
     db: Session = Depends(get_db),
 ):
     query = db.query(User)
     if search.strip():
-        pattern = f"%{search.strip()}%"
-        query = query.filter(or_(User.full_name.ilike(pattern), User.email.ilike(pattern)))
+        pattern = like_pattern(search.strip())
+        query = query.filter(or_(User.full_name.ilike(pattern, escape="\\"), User.email.ilike(pattern, escape="\\")))
     if role in Role.ALL:
         query = query.filter(User.role == role)
     if status_filter == "active":
@@ -246,7 +252,7 @@ def revoke_invitation(invitation_id: int, root: User = Depends(get_current_root_
 
 @router.get("/audit-logs", response_model=list[AuditLogOut])
 def audit_logs(
-    category: str = "",
+    category: str = Query("", max_length=20),
     limit: int = Query(50, ge=1, le=200),
     root: User = Depends(get_current_root_admin),
     db: Session = Depends(get_db),

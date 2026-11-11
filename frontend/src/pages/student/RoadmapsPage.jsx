@@ -31,12 +31,10 @@ export function RoadmapsPage() {
                   <span className="program-card-icon" aria-hidden="true">
                     <Icon name="route" size={24} />
                   </span>
-                  {roadmap.category && <span className="program-card-category">{roadmap.category}</span>}
                 </span>
                 <span className="program-card-body">
                   <span className="program-card-title">{roadmap.program_name || roadmap.title}</span>
                   {roadmap.program_name && <span className="program-card-subtitle">{roadmap.title}</span>}
-                  {roadmap.summary && <span className="program-card-summary">{roadmap.summary}</span>}
                 </span>
                 <span className="program-card-meta">
                   <span>
@@ -69,10 +67,7 @@ export function RoadmapDetailPage() {
       <Link to="/student/roadmaps" className="back-link" style={{ marginBottom: 12 }}>
         <Icon name="arrow-left" size={16} /> All roadmaps
       </Link>
-      <PageHeader
-        title={roadmap.title}
-        description={roadmap.summary}
-      />
+      <PageHeader title={roadmap.title} />
       {roadmap.description && (
         <div style={{ marginBottom: 24, maxWidth: '70ch' }}>
           <RichText text={roadmap.description} />

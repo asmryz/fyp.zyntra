@@ -30,6 +30,10 @@ class RateLimiter:
         with self._lock:
             hits = self._hits[key]
             self._drop_old_hits(hits, now)
+            if not hits:
+                # Forget keys with no recent hits so the table does not grow forever
+                del self._hits[key]
+                return
             if len(hits) >= self.max_requests:
                 retry_after = int(self.window_seconds - (now - hits[0])) + 1
                 raise HTTPException(
@@ -58,3 +62,5 @@ class RateLimiter:
 auth_ip_limiter = RateLimiter(max_requests=20, window_seconds=300)
 # Failed logins per email address
 failed_login_limiter = RateLimiter(max_requests=5, window_seconds=900)
+# AI assistant questions per student (each can keep the AI service busy for a while)
+assistant_limiter = RateLimiter(max_requests=10, window_seconds=60)

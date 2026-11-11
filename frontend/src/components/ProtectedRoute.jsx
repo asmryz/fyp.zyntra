@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { homePathForRole } from '../utils/roles'
+import { homePathForRole, roadmapPathFromStudentPath } from '../utils/roles'
 import { PageLoader } from './ui/Feedback'
 
 /**
@@ -19,7 +19,8 @@ export default function ProtectedRoute({ roles }) {
   }
 
   if (roles && !roles.includes(user.role)) {
-    return <Navigate to={homePathForRole(user.role)} replace />
+    // A program's roadmap link opens that roadmap in the user's own dashboard
+    return <Navigate to={roadmapPathFromStudentPath(location.pathname, user.role) || homePathForRole(user.role)} replace />
   }
 
   return <Outlet />

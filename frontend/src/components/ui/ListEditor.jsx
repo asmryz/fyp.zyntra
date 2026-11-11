@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import Icon from './Icon'
+import { LIMITS } from '../../utils/limits'
 
 /**
  * Edit an ordered list of short text items, e.g. eligibility criteria.
@@ -37,6 +38,7 @@ export default function ListEditor({ label, value, onChange, placeholder = '', a
             <input
               className="input"
               value={item}
+              maxLength={LIMITS.listItem}
               placeholder={placeholder}
               aria-label={`${label} item ${index + 1}`}
               onChange={(event) => update(index, event.target.value)}
